@@ -1,8 +1,8 @@
+# Análisis de Sentimientos en los tweets acerca de la vacuna rusa contra el COVID-19
+##### Trabajo Final de Curso 2020-10
 ##### Universidad Privada Antenor Orrego
 ##### Facultad de Ingeniería
 ##### Escuela Profesional de Ingeniería de Computación y Sistemas
-# Análisis de Sentimientos en los tweets acerca de la vacuna rusa contra el COVID-19
-#### Trabajo Final de Curso 2020-10
 ---
 ## GENERALIDADES
 El trabajo final es un producto software que desarrolla el ciclo de vida de un proyecto de ciencia de datos, para el cual, el equipo desarrollador seleccionó el tema de "Análisis de Sentimientos" para demostrar dicho ciclo de vida.
@@ -100,15 +100,14 @@ Lo primero será ingresar a la GSuite de Google y buscar: "Twitter Archiver", lo
 
 Una vez instalado, procedemos a crear un nuevo archivo vacío en Google Sheets, y dentro nos aparecerá el menú COMPLEMENTOS, abrimos, seleccionamos Twitter Archiver y creamos una nueva regla de busqueda, ahí nos darán la opcion de ingresar un hashtag, palabra clave, tendencia, etc. Además de otros campos como el lenguaje, locación, fecha.
 
-![TwitterArchiverC](https://github.com/RQuilcatP10/M1-ProyectoFinal/blob/master/Otros/M1Recoleccion3.PNG)
+![TwitterArchiverC](https://github.com/RQuilcatP10/M1-ProyectoFinal/blob/master/Otros/M1Recoleccion3.png)
 
 Cuando hayamos ingresado los parametros de busqueda, empezará automaticamente a llenar un template predeterminado para esto con la data requerida (fecha, usuario, nombre de usuario, texto del tweet, id del tweet, media, locación, usuario verificado, biografía del usuario, fecha de creación del usuario) para un análisis de datos y poder pasar a la siguiente fase del ciclo de vida.
 
 ![TwitterArchiverA](https://github.com/RQuilcatP10/M1-ProyectoFinal/blob/master/Otros/M1Recoleccion4.PNG)
 ---
----
-####MODELADO ESTRUCTURADO DE DATOS :chart_with_upwards_trend:
-<i><b>A) MODELADO DE LA BASE DE DATOS</b></i>
+#### MODELADO ESTRUCTURADO DE DATOS :chart_with_upwards_trend:
+##### A) MODELADO DE LA BASE DE DATOS
 Según el dataset que usaremos, modelaremos la base de datos para albergar la información recolectada en el archivo .csv, para ellos analizaremos los campos que este contiene, y con ello procedemos a identificar:
 1. Se pueden crear 2 tablas a partir del dataset los cuales son:
     * <b><u>USUARIO</u></b> :arrow_right: Hace referencia al usuario de twitter, aqui se puede guardar el usuario, nombre real del usuario, número de personas a que sigue, número de personas que le siguen, fecha de creación, locación (sin ubigeo completo), y una descripción.
@@ -122,7 +121,7 @@ Según el dataset que usaremos, modelaremos la base de datos para albergar la in
 
 Teniendo en cuenta esta estructura, el modelo quedará de la siguiente manera:
 ![ModeloBD](https://github.com/RQuilcatP10/M1-ProyectoFinal/blob/master/Otros/M1ModeloEstructurado1.PNG)
-<i><b>B) IMPLEMENTACIÓN DE LA BASE DE DATOS</b></i>
+##### B) IMPLEMENTACIÓN DE LA BASE DE DATOS
 En esta parte, para el proyecto hemos hecho las siguientes consideraciones:
 >   1. Se hará uso de una base de datos alojada en SQL Server, creada con un servicio en Amazon Web Services.
 >   2. Se hará uso del dataset para dividirlo y formar archivos .csv para insertarlos a través de la función BULK de SQL.
