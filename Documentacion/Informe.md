@@ -9,7 +9,7 @@ El trabajo final es un producto software que desarrolla el ciclo de vida de un p
 Se usará la herramienta cloud Google Colab el cual soporta y se basa en los Notebooks de Jupyter, que permite el uso gratuito de GPUs y TPUs, todo bajo el lenguaje Python en su versión 2.7 y 3.6
 #### CASO DE ESTUDIO: VACUNA CONTRA EL COVID :microscope:
 <p style='text-align: justify;'> El mundo actualmente vive una crisis sanitaria a causa del virus SARS-Cov-2 o más conocido como coronavirus (COVID-19) el cual ha puesto en una situación dificil a casi la totalidad de países, cuyo objetivo desde el inicio de esta pandemia fue hallar la vacuna para contrarrestar dicho virus. Actualmente en el mes de agosto aproximadamente van una totalidad de 20,2 millones de casos de contagio y más de 741.000 muertos en todo el mundo. De manera local, en Perú vamos un aproximado de 483 mil casos de contagio, y 21.000 fallecidos. <br> El día 11 de Agosto del 2020, el presidente de la Federación Rusa, Vladímir Putin, declaro a la prensa mundial que Rusia ya tiene una vacuna aprobada y registrada contra el coronavirus, el cual fue desarrollado por el Instituto Gamaleya y fue registrada después de dos meses de ensayos en humanos. Dado el caso, en redes sociales, a nivel mundial, se vino criticando o aplaudiendo dicho logro por parte de Rusia y su presidente. A demás declaran que por una parte es poco confiable, hay muchas dudas y descubrimientos por hacer, mientras que muchos países en el mundo estan decididos a comprarle a Rusia dichas vacunas en el menor tiempo posible, ya que actualmente se están produciendo en masa.<br> Como analistas de datos, queremos determinar que tan confiable puede ser esta vacuna, y cuantos prefieren no opinar o estar en contra de dicha vacuna, para ello nos basaremos en los comentarios que se realicen dentro de la red social Twitter, la cual es una gran fuente de datos para poder extraer dicha información, y a su vez, nos permitirá hacer una exploración del ciclo de vida de un proyecto de ciencia de datos.</p>
-<br>
+
 ## ANÁLISIS DE SENTIMIENTOS :fearful: :smile: :anguished: :rage:
 <p style='text-align: justify;'> El Análisis de Sentimientos es un área de investigación enmarcada dentro del campo del Procesamiento del Lenguaje Natural y cuyo objetivo fundamental es el tratamiento computacional de opiniones, sentimientos y subjetividad en textos. En este contexto, una opinión es una valoración positiva o negativa acerca de un producto, servicio, organización, persona o cualquier otro tipo de ente sobre la que se expresa un texto determinado.</p>
 #### PROCESAMIENTO DE LENGUAJE NATURAL :speech_balloon:
@@ -105,8 +105,8 @@ Cuando hayamos ingresado los parametros de busqueda, empezará automaticamente a
 
 ![TwitterArchiverA](https://github.com/RQuilcatP10/M1-ProyectoFinal/blob/master/Otros/M1Recoleccion4.PNG)
 ---
-#### MODELADO ESTRUCTURADO DE DATOS :chart_with_upwards_trend:
-##### A) MODELADO DE LA BASE DE DATOS
+### MODELADO ESTRUCTURADO DE DATOS :chart_with_upwards_trend:
+#### A) MODELADO DE LA BASE DE DATOS
 Según el dataset que usaremos, modelaremos la base de datos para albergar la información recolectada en el archivo .csv, para ellos analizaremos los campos que este contiene, y con ello procedemos a identificar:
 1. Se pueden crear 2 tablas a partir del dataset los cuales son:
     * <b><u>USUARIO</u></b> :arrow_right: Hace referencia al usuario de twitter, aqui se puede guardar el usuario, nombre real del usuario, número de personas a que sigue, número de personas que le siguen, fecha de creación, locación (sin ubigeo completo), y una descripción.
@@ -120,7 +120,7 @@ Según el dataset que usaremos, modelaremos la base de datos para albergar la in
 
 Teniendo en cuenta esta estructura, el modelo quedará de la siguiente manera:
 ![ModeloBD](https://github.com/RQuilcatP10/M1-ProyectoFinal/blob/master/Otros/M1ModeloEstructurado1.PNG)
-##### B) IMPLEMENTACIÓN DE LA BASE DE DATOS
+#### B) IMPLEMENTACIÓN DE LA BASE DE DATOS
 En esta parte, para el proyecto hemos hecho las siguientes consideraciones:
 >   1. Se hará uso de una base de datos alojada en SQL Server, creada con un servicio en Amazon Web Services.
 >   2. Se hará uso del dataset para dividirlo y formar archivos .csv para insertarlos a través de la función BULK de SQL.
