@@ -1,4 +1,4 @@
-# Análisis de Sentimientos a los tweets acerca de la vacuna rusa contra el COVID-19
+# Análisis de Sentimientos en los tweets acerca de la vacuna rusa contra el COVID-19
 
 _Universidad Privada Antenor Orrego_
 <br>
