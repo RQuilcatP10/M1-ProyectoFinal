@@ -21,7 +21,7 @@ Luego de ello le asignaremos una contraseña a **root** para MariaDB :lock:
 ```bash
 $ mysql_secure_installation
 ```
-Se escribe la contraseña deseada, y se le da Yes [Y/n] a todas las configuraciones recomendadas. Con ello está terminada la configuración de MariaDB
+Se escribe la contraseña deseada, y se le da Yes [Y/n] a todas las configuraciones recomendadas. Con ello está terminada la configuración de MariaDB<br>
 ![MariaDBSuccess](https://linuxhint.com/wp-content/uploads/2019/08/17-44.png)
 
 ### Creación de un usuario para php MyAdmin :bust_in_silhouette:
@@ -32,6 +32,7 @@ $ mysql -u root -p
 ```
 Ingresamos la contraseña y estaremos logueados
 ![LoguedMariaDB](https://linuxhint.com/wp-content/uploads/2019/08/20-41.png)
+<br>
 Luego de ello, usaremos un comando SQL para asignar un usuario y password para usar php MyAdmin
 ```sql
 GRANT ALL ON *.* TO 'rodrigo'@'localhost' IDENTIFIED BY 'contraseña'
@@ -97,6 +98,7 @@ $ nano /etc/apache2/ports.conf
 ```
 y agregamos el puerto 9000
 ![Puerto9000](https://linuxhint.com/wp-content/uploads/2019/08/43-7.png)
+
 Para guardar las configuraciones hechas, ejecutamos finalmente estos comandos
 ```bash
 $ a2ensite phpmyadmin.conf
@@ -111,8 +113,8 @@ Solo debemos acceder de manera local desde el navegador al puerto 9000 y estarem
 localhost:9000
 ```
 ![phpMyAdmin](https://linuxhint.com/wp-content/uploads/2019/08/46-6.png)
-<hr>
-#Instalación de Jupyter Labs :milky_way:
+
+# Instalación de Jupyter Labs :milky_way:
 <hr>
 En la shell de Debian se debe instalar el paquete de jupyter labs de manera normal usando:
 ```bash
@@ -124,9 +126,9 @@ rodrigo@debian:~$ jupyter lab --ip 0.0.0.0 --LabApp.token=''
 ```
 Y finalmente deberiamos entrar desde el navegador de manera local y aparecerá la interfaz gráfica de Jupyter Labs
 ![JupLabs](https://images.squarespace-cdn.com/content/v1/521e95f4e4b01c5870ce81cf/1522882511035-RTZNGN3SJXUCBSS6BM30/ke17ZwdGBToddI8pDm48kIVBg39eSXCKFVC5h4T1An4UqsxRUqqbr1mOJYKfIPR7LoDQ9mXPOjoJoqy81S2I8N_N4V1vUb5AoIIIbLZhVYxCRW4BPu10St3TBAUQYVKcN_UkRR-3GcESwBHaWf4i2Taax9o3RgkF0Zm1KPmCzr2zo-hOOgsM_tZf3pq2-q3J/1.JPG)
-<hr>
+
 # Configuración de SSH con clave pública y privada :key:
-<hr>
+
 Primero se debe tener instalado en Debian el servidor SSH para ello usamos:
 ```bash
 $ apt-get install openssh-server
