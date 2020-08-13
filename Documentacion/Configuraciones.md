@@ -134,9 +134,11 @@ Primero se debe tener instalado en Debian el servidor SSH para ello usamos:
 $ apt-get install openssh-server
 ```
 Por el lado de Windows debemos utilizar PuTTY y PuTTYGen para crear las claves SSH
+<br>
 ![Clave1](https://www.codeproject.com/KB/vista-security/497728/PuTTY-Key-Generator-Before-Generate__thumb.png)
 <br>
 Damos Genereate en PuTTYGen para obtener una clave.
+<br>
 ![Clave2](https://www.codeproject.com/KB/vista-security/497728/PuTTY-Key-Generator-On-Generate_thum_thumb.png)
 <br>
 Luego la guardaremos como llave privada en cualquier path de nuestro directorio de windows.
