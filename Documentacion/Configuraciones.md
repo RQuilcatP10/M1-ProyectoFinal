@@ -115,7 +115,7 @@ localhost:9000
 ![phpMyAdmin](https://linuxhint.com/wp-content/uploads/2019/08/46-6.png)
 
 # Instalación de Jupyter Labs :milky_way:
-<hr>
+
 En la shell de Debian se debe instalar el paquete de jupyter labs de manera normal usando:
 ```bash
 $ apt-get install jupyterlab
@@ -135,8 +135,10 @@ $ apt-get install openssh-server
 ```
 Por el lado de Windows debemos utilizar PuTTY y PuTTYGen para crear las claves SSH
 ![Clave1](https://www.codeproject.com/KB/vista-security/497728/PuTTY-Key-Generator-Before-Generate__thumb.png)
+<br>
 Damos Genereate en PuTTYGen para obtener una clave.
 ![Clave2](https://www.codeproject.com/KB/vista-security/497728/PuTTY-Key-Generator-On-Generate_thum_thumb.png)
+<br>
 Luego la guardaremos como llave privada en cualquier path de nuestro directorio de windows.
 Una vez creada la clave y guardada como privada, por el lado de Debian, en la carpeta del usuario verificamos si existe el directorio .ssh
 ```bash
@@ -149,18 +151,23 @@ $ cd .ssh
 ```
 Una vez creado el directorio, pasamos a crear un archivo de texto simple donde estará la clave generada por PuTTYGen
 ![Clave3](https://www.codeproject.com/KB/vista-security/497728/PuTTY-Key-Generator-Copy-Public-Key__thumb.png)
+<br>
 En Debian usamos el comando
 ```bash
 $ echo *public_key* >> authorized_keys
 ```
 ![Clave4](https://www.codeproject.com/KB/vista-security/497728/Type-Append-to-authorized-keys-file__thumb.png)
+<br>
 Una vez hecho esto, configuramos la conexión y la sesión en PuTTY 
 ![Clave5](https://www.codeproject.com/KB/vista-security/497728/PuTTY-Configuration-Save-SSH-Auth_th_thumb.png)
+<br>
 En la configuracion de SSH/Auth seleccionamos la clave privada que guardamos anteriormente, de tal manera que al inciar la sesión a Debian desde PuTTY, no nos pida la contraseña y se cree la comunicación entre Windows y Linux
 ![Clave5](https://www.codeproject.com/KB/vista-security/497728/PuTTY-SSH-Logged-In_thumb2_thumb.png)
+<br>
 Y con eso podemos conectarnos a un servidor Linux/OpenSSH utilizando la Autorizacion de Clave Pública/Privada
 
 ```bash
 rodrigo@debian:~$ echo Autor: Rodrigo Miguel Quilcat Pesantes
-rodrigo@debian:~$ echo Curso: Arquitectura y Administración de Mainframes - Laboratorio
+diego@debian:~$   echo Autor: Diego Edinson Liberato Bernal
+rodrigo@debian:~$ echo Curso: Arquitectura y Administración de Mainframes 2020-10
 ```
