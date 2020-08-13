@@ -1,7 +1,7 @@
-<hr>
-#Instalación de php MyAdmin en Debian :computer:
-<hr>
-###Configuración de MariaDB :pager:
+
+# Instalación de php MyAdmin en Debian :computer:
+
+### Configuración de MariaDB :pager:
 Para poder crear una autenticación en el servidor de MariaDB también debemos instalar un client para poder asignar los usuarios que se logearan desde php MyAdmin
 ``` bash
 $ apt-get install mariadb-client
@@ -24,7 +24,7 @@ $ mysql_secure_installation
 Se escribe la contraseña deseada, y se le da Yes [Y/n] a todas las configuraciones recomendadas. Con ello está terminada la configuración de MariaDB
 ![MariaDBSuccess](https://linuxhint.com/wp-content/uploads/2019/08/17-44.png)
 
-###Creación de un usuario para php MyAdmin :bust_in_silhouette:
+### Creación de un usuario para php MyAdmin :bust_in_silhouette:
 
 Primero nos loguearemos al shell de MariaDB
 ```bash
@@ -42,7 +42,7 @@ FLUSH PRIVILEGES;
 ```
 y cerramos el shell de MariaDB con **\q**
 
-###Instalación de las librerías de PHP :file_folder:
+### Instalación de las librerías de PHP :file_folder:
 Para poder utilizar php MyAdmin necesitamos instalar ciertas librerias, para usar lenguajes de etiquetas tanto como json o xml, usamos el siguiente comando:
 ```bash
 $ apt-get install apache2 php php-json php-mbstring php-zip php-gd php-curl php-xml php-mysql
@@ -50,7 +50,7 @@ $ apt-get install apache2 php php-json php-mbstring php-zip php-gd php-curl php-
 Presionamos **ENTER** y le damos **Yes** a la confirmación de la instalación de los paquetes y debe quedar de la siguiente manera:
 ![phpLibraries](https://linuxhint.com/wp-content/uploads/2019/08/26-32.png)
 
-###Descarga e instalación de php MyAdmin :floppy_disk:
+### Descarga e instalación de php MyAdmin :floppy_disk:
 
 Instalamos phpMyAdmin primero descargando de una repo externa el zip del programa en su última versión, para ello usaremos:
 ```bash
@@ -71,7 +71,7 @@ $ chown - Rfv www-data:www-data /opt/phpMyAdmin
 y el log debería quedar de la siguiente manera
 ![phpLogWWWData](https://linuxhint.com/wp-content/uploads/2019/08/39-10.png)
 
-###Configurando Apache para php MyAdmin :space_invader:
+### Configurando Apache para php MyAdmin :space_invader:
 Para poder acceder a php MyAdmin de manera local debemos configurar el archivo conf de phpMyAdmin, y configurar el puerto donde se ejecutará localmente
 ```bash
 $ nano /etc/apache2/sites-available/phpmyadmin.conf
@@ -105,7 +105,7 @@ $ a2ensite phpmyadmin.conf
 $ systemctl restart apache2
 ```
 
-###Accediendo a phpMyAdmin :heavy_check_mark:
+### Accediendo a phpMyAdmin :heavy_check_mark:
 Solo debemos acceder de manera local desde el navegador al puerto 9000 y estaremos entrando a phpMyAdmin.
 ```bash
 localhost:9000
@@ -125,7 +125,7 @@ rodrigo@debian:~$ jupyter lab --ip 0.0.0.0 --LabApp.token=''
 Y finalmente deberiamos entrar desde el navegador de manera local y aparecerá la interfaz gráfica de Jupyter Labs
 ![JupLabs](https://images.squarespace-cdn.com/content/v1/521e95f4e4b01c5870ce81cf/1522882511035-RTZNGN3SJXUCBSS6BM30/ke17ZwdGBToddI8pDm48kIVBg39eSXCKFVC5h4T1An4UqsxRUqqbr1mOJYKfIPR7LoDQ9mXPOjoJoqy81S2I8N_N4V1vUb5AoIIIbLZhVYxCRW4BPu10St3TBAUQYVKcN_UkRR-3GcESwBHaWf4i2Taax9o3RgkF0Zm1KPmCzr2zo-hOOgsM_tZf3pq2-q3J/1.JPG)
 <hr>
-#Configuración de SSH con clave pública y privada :key:
+# Configuración de SSH con clave pública y privada :key:
 <hr>
 Primero se debe tener instalado en Debian el servidor SSH para ello usamos:
 ```bash
@@ -157,9 +157,8 @@ Una vez hecho esto, configuramos la conexión y la sesión en PuTTY
 En la configuracion de SSH/Auth seleccionamos la clave privada que guardamos anteriormente, de tal manera que al inciar la sesión a Debian desde PuTTY, no nos pida la contraseña y se cree la comunicación entre Windows y Linux
 ![Clave5](https://www.codeproject.com/KB/vista-security/497728/PuTTY-SSH-Logged-In_thumb2_thumb.png)
 Y con eso podemos conectarnos a un servidor Linux/OpenSSH utilizando la Autorizacion de Clave Pública/Privada
-<hr>
+
 ```bash
 rodrigo@debian:~$ echo Autor: Rodrigo Miguel Quilcat Pesantes
 rodrigo@debian:~$ echo Curso: Arquitectura y Administración de Mainframes - Laboratorio
 ```
-<hr>
