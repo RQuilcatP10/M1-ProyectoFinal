@@ -159,9 +159,11 @@ $ echo *public_key* >> authorized_keys
 ![Clave4](https://www.codeproject.com/KB/vista-security/497728/Type-Append-to-authorized-keys-file__thumb.png)
 <br>
 Una vez hecho esto, configuramos la conexión y la sesión en PuTTY 
+<br>
 ![Clave5](https://www.codeproject.com/KB/vista-security/497728/PuTTY-Configuration-Save-SSH-Auth_th_thumb.png)
 <br>
 En la configuracion de SSH/Auth seleccionamos la clave privada que guardamos anteriormente, de tal manera que al inciar la sesión a Debian desde PuTTY, no nos pida la contraseña y se cree la comunicación entre Windows y Linux
+<br>
 ![Clave5](https://www.codeproject.com/KB/vista-security/497728/PuTTY-SSH-Logged-In_thumb2_thumb.png)
 <br>
 Y con eso podemos conectarnos a un servidor Linux/OpenSSH utilizando la Autorizacion de Clave Pública/Privada
