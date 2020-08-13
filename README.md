@@ -1,8 +1,11 @@
 # Análisis de Sentimientos a los tweets acerca de la vacuna rusa contra el COVID-19
 
 _Universidad Privada Antenor Orrego_
+<br>
 _Facultad de Ingeniería_
+<br>
 _Escuela Profesional de Ingeniería de Computación y Sistemas_
+<br>
 _Proyecto desarrollado para el curso de Administración y Arquitectura de Mainframes_
 
 ## Autores
