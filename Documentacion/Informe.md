@@ -10,14 +10,13 @@ Se usará la herramienta cloud Google Colab el cual soporta y se basa en los Not
 #### CASO DE ESTUDIO: VACUNA CONTRA EL COVID :microscope:
 <p style='text-align: justify;'> El mundo actualmente vive una crisis sanitaria a causa del virus SARS-Cov-2 o más conocido como coronavirus (COVID-19) el cual ha puesto en una situación dificil a casi la totalidad de países, cuyo objetivo desde el inicio de esta pandemia fue hallar la vacuna para contrarrestar dicho virus. Actualmente en el mes de agosto aproximadamente van una totalidad de 20,2 millones de casos de contagio y más de 741.000 muertos en todo el mundo. De manera local, en Perú vamos un aproximado de 483 mil casos de contagio, y 21.000 fallecidos. <br> El día 11 de Agosto del 2020, el presidente de la Federación Rusa, Vladímir Putin, declaro a la prensa mundial que Rusia ya tiene una vacuna aprobada y registrada contra el coronavirus, el cual fue desarrollado por el Instituto Gamaleya y fue registrada después de dos meses de ensayos en humanos. Dado el caso, en redes sociales, a nivel mundial, se vino criticando o aplaudiendo dicho logro por parte de Rusia y su presidente. A demás declaran que por una parte es poco confiable, hay muchas dudas y descubrimientos por hacer, mientras que muchos países en el mundo estan decididos a comprarle a Rusia dichas vacunas en el menor tiempo posible, ya que actualmente se están produciendo en masa.<br> Como analistas de datos, queremos determinar que tan confiable puede ser esta vacuna, y cuantos prefieren no opinar o estar en contra de dicha vacuna, para ello nos basaremos en los comentarios que se realicen dentro de la red social Twitter, la cual es una gran fuente de datos para poder extraer dicha información, y a su vez, nos permitirá hacer una exploración del ciclo de vida de un proyecto de ciencia de datos.</p>
 <br>
-#### OBJETIVOS
 ## ANÁLISIS DE SENTIMIENTOS :fearful: :smile: :anguished: :rage:
 <p style='text-align: justify;'> El Análisis de Sentimientos es un área de investigación enmarcada dentro del campo del Procesamiento del Lenguaje Natural y cuyo objetivo fundamental es el tratamiento computacional de opiniones, sentimientos y subjetividad en textos. En este contexto, una opinión es una valoración positiva o negativa acerca de un producto, servicio, organización, persona o cualquier otro tipo de ente sobre la que se expresa un texto determinado.</p>
-####PROCESAMIENTO DE LENGUAJE NATURAL :speech_balloon:
+#### PROCESAMIENTO DE LENGUAJE NATURAL :speech_balloon:
 <p style='text-align: justify;'>El procesamiento del lenguaje natural, abreviado PLN​​ —en inglés natural language processing, NLP— es un campo de las ciencias de la computación, inteligencia artificial y lingüística que estudia las interacciones entre las computadoras y el lenguaje humano.</p>
 
 ## CICLO DE VIDA DE CIENCIA DE LOS DATOS
-#### RECOLECCIÓN DE DATOS :open_file_folder:
+### RECOLECCIÓN DE DATOS :open_file_folder:
 Para la fase de recolección de datos, usaremos la red social Twitter, la cual nos permitirá extraer la información con respecto a los tweets que realizan los usuarios. Esto será posible con la afiliación del usuario al programa Developers de Twitter.
 
 ![TwitterDeveloper](https://github.com/RQuilcatP10/M1-ProyectoFinal/blob/master/Otros/M1Imagen1.PNG)
@@ -29,7 +28,7 @@ Dentro de ello, crearemos un proyecto, el cual nos servirá para crear keys, y c
 
 Una vez con esto creado y validado, procedemos realizar la extracción de la data conveniente, para ello, presentaremos dos formas para hacerlo.
 
-<i><b>A) PRIMER MÉTODO DE RECOLECCIÓN: SCRIPT EN PYTHON - GOOGLE COLAB</b></i>
+#### A) PRIMER MÉTODO DE RECOLECCIÓN: SCRIPT EN PYTHON - GOOGLE COLAB
 Creamos un notebook en Google Colab (véase en <b>Codigo/Datos/Recoleccion de Datos.ipynb</b>) aquí importaremos las siguientes librerías:
 
 ```python
@@ -92,7 +91,7 @@ El resultado que obtendremos es el siguiente:
 
 ![CSV](https://github.com/RQuilcatP10/M1-ProyectoFinal/blob/master/Otros/M1Recoleccion1.PNG)
 
-<i><b>B) SEGUNDO MÉTODO DE RECOLECCIÓN: USO DE GOOGLE SHEETS ADD ONS</b></i>
+#### B) SEGUNDO MÉTODO DE RECOLECCIÓN: USO DE GOOGLE SHEETS ADD ONS
 El primer método de recolección al ser un script se tendría que ejecutar cada vez que el notebook sea abierto, por lo que la recolección se hará mas corta en cuanto a items, por los periodos de tiempo. Una alternativa a esto, es el uso de GOOGLE SHEET y TWITTER ARCHIVER, que es un complemento que nos agiliza la recolección de datos, organizandolos automaticamente en forma de tabla, listo para exportar como archivo .csv, y a demás de eso se va llenando de forma automática cada 1 hora, llenando de 100 registros dicho archivo. Esto agiliza mas la recolección, ya que a mas datos, mejor serán los modelos a implementar mas adelante. Para ello también usaremos la cuenta de Twitter Developers que creamos al comienzo de esta fase.
 Lo primero será ingresar a la GSuite de Google y buscar: "Twitter Archiver", lo descargamos e instalamos.
 
