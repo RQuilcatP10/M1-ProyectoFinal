@@ -487,7 +487,7 @@ El Support Vector Classifier descrito en los apartados anteriores consigue bueno
 
 El hecho de que los grupos no sean linealmente separables en el espacio original no significa que no lo sean en un espacio de mayores dimensiones. Las imágenes siguientes muestran como dos grupos, cuya separación en dos dimensiones no es lineal, sí lo es al añadir una tercera dimensión.
 
-![SVM](./M1SVM.png)
+![CSV](https://github.com/RQuilcatP10/M1-ProyectoFinal/blob/master/Otros/M1SVM.png)
 
 <i><b><u> IMPLEMENTACIÓN EN R PARA ANÁLISIS DE SENTIMIENTOS</b></u></i>
 
