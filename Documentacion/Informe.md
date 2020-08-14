@@ -729,3 +729,91 @@ Para analizar el éxito del modelo, crearemos una matriz de confusión, le pasam
 confusionMatrix(ejemplo_prediccion, ejemplo_prueba[["screen_name"]])
 ```
 >Obtuvimos una precisión del 92.01%, por lo que no se realizó algún ajuste en el modelo. También se obtuvo 93.92% de Especificidad, que corresponde en este caso a la categoria "Otro"
+
+#### ARBOL DE REGRESIÓN
+Un árbol de regresión consiste en hacer preguntas de tipo ¿Quien es mayor que? para cada una de las covariables, de esta forma el espacio de las covariables es dividido en hiper-rectangulos y todas las observaciones que queden dentro de un hiper-rectangulo tendrán el mismo valor estimado Y.
+ 
+![cart](https://github.com/RQuilcatP10/M1-ProyectoFinal/blob/master/Otros/M1Cart.png)
+
+Los pasos para realizar la partición del espacio son:
+
+1. Dado un conjunto de covariables (características), encontrar la covariable que permita predecir mejor la variable respuesta.
+2. Encontrar el punto de corte sobre esa covariable que permita predecir mejor la variable respuesta.
+3. Repetir los pasos anteriores hasta que se alcance el criterio de parada.
+
+Algunas de las ventajas de los árboles de regresión son:
+
+* Fácil de entender e intrepretar.
+* Requiere poca preparación de los datos.
+* Las covariables pueden ser cualitativas o cuantitativas.
+* No exige supuestos distribucionale
+
+<i><b><u> IMPLEMENTACIÓN EN R PARA ANÁLISIS DE SENTIMIENTOS</b></u></i>
+
+Al igual que los demas algoritmos está basado en el análisis de corpus creados a partir de textos, en este caso tweets, para ello seguiremos la misma metodología de los anteriores modelos, haremos un split a la data, para tener data para test y para el entrenamiento, entrenaremos el modelo y luego crearemos una matriz de confusion para corroborar valores
+
+```r
+library(tm)
+tweets <- read.csv("www/datos/Csv/vacuna_dataset_preprocesado.csv", sep=",")
+
+tweets$Negative <- as.factor(tweets$Label == 0)
+# Look at the number and proportion of negative tweets
+table(tweets$Negative)
+
+tweet_corpus <- Corpus(VectorSource(tweets$Tweet))
+
+#tweet_corpus
+clean_corpus <- function(corp){
+  corp <- tm_map(corp, content_transformer(tolower))
+  corp <- tm_map(corp, removePunctuation)
+  corp <- tm_map(corp, removeWords, stopwords('en'))
+  corp <- tm_map(corp, stemDocument)
+}
+
+clean_corp <- clean_corpus(tweet_corpus)
+frequencies <- TermDocumentMatrix(clean_corp)
+
+#findFreqTerms(frequencies, lowfreq = 20)
+
+dtm <- DocumentTermMatrix(clean_corp)
+sparseData <- removeSparseTerms(dtm, sparse=0.995)
+sparsedf <- as.data.frame(as.matrix(sparseData))
+colnames(sparsedf) <- make.names(colnames(sparsedf))
+sparsedf$Negative <- tweets$Negative
+
+set.seed(101)
+split <- sample.split(sparsedf$Negative, SplitRatio = 0.7)
+trainSparse <- subset(sparsedf, split==TRUE)
+testSparse <- subset(sparsedf, split==FALSE)
+
+tweet.CART <- rpart(Negative~., trainSparse, method='class')
+#show plot
+#prp(tweet.CART)
+library(caret)
+predictCART <- predict(tweet.CART, testSparse, type='class')
+
+# Compute Accuracy
+#table(predictCART, testSparse$Negative)
+#postResample(predictCART, testSparse$Negative)
+
+control <- trainControl(method='cv', number=10)
+metric <- 'Accuracy'
+
+# CART
+set.seed(101)
+tweet.cart <- train(Negative~., data=trainSparse, method='rpart',
+                    trControl=control, metric=metric)
+
+tweet.pred <- predict(tweet.cart, testSparse)
+
+# Create Confusion Matrix
+confusionMatrix(tweet.pred, testSparse$Negative)
+```
+Como resultados obtuvimos un 79% de precision en el modelo, por lo que es confiable saber si un tweet es aprobatorio o no para nuestro caso
+
+## CONCLUSIONES 
+
+1. El ciclo de vida de un proyecto de ciencias de datos nos permite explorar muchas formas de ver y analizar la informacion que tenemos a la mano, desde informacion publica, hasta información privada, etc.
+2. El analisis de sentimientos refleja mucho las expresiones reales del usuario que realiza la publicacion de ciertos textos en la internet, normalmente en redes sociales. Como temas relevantes como la vacuna del COVID-19 creada en Rusia, generó dos grupos, donde la mitad abogaba por dicha vacuna, como un milagro y la aprobaban, mientras que otro grupo no, entonces se podría decir que la opinion publica puede impactar en el gobierno de un país, ya que ellos serán los principales en adquirir dicha vacuna.
+3. Los modelos predictivos nos permiten automatizar muchas tareas, entre ellas clasificar elementos cotidianos, etc. En nuestro caso de estudio determinamos que de los 4 modelos explorados, y con la data que hemos recolectado, la máquina de vectores de soporte es la mas confiable por la precisión mas alta que ha devuelto el modelo. Pero sabemos que a más data, mejor será el modelo, será cuestión de volver a entrenar los 4 modelos y obtener nuevos resultados.
+4. Según lo analizado por los modelos y por el mismo proceso de análisis de sentimientos, la mayoría de la población mundial en redes sociales, aprueba que la vacuna sea exportada y usada.
