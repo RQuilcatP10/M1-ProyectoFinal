@@ -1,0 +1,2 @@
+#### ARBOL DE REGRESIÓN
+Un árbol de regresión consiste en hacer preguntas de tipo ¿Quien es mayor que? para cada una de las covariables, de esta forma el espacio de las covariables es dividido en hiper-rectangulos y todas las observaciones que queden dentro de un hiper-rectangulo tendrán el mismo valor estimado Y.

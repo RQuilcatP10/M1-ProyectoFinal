@@ -1,0 +1,24 @@
+{
+    "id": "637818F6",
+    "path": "~/ProyectosR/M1-ProyectoFinal/www/datos/Modelos/NaiveBayes.R",
+    "project_path": "www/datos/Modelos/NaiveBayes.R",
+    "type": "r_source",
+    "hash": "475885383",
+    "contents": "",
+    "dirty": false,
+    "created": 1597407692378.0,
+    "source_on_save": false,
+    "relative_order": 5,
+    "properties": {
+        "cursorPosition": "8,45",
+        "scrollLine": "0"
+    },
+    "folds": "",
+    "lastKnownWriteTime": 1597407979,
+    "encoding": "UTF-8",
+    "collab_server": "",
+    "source_window": "",
+    "last_content_update": 1597407979109,
+    "read_only": false,
+    "read_only_alternatives": []
+}

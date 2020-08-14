@@ -1,0 +1,24 @@
+{
+    "id": "59422BE0",
+    "path": "~/ProyectosR/M1-ProyectoFinal/www/datos/Modelos/Kmeans.R",
+    "project_path": "www/datos/Modelos/Kmeans.R",
+    "type": "r_source",
+    "hash": "605909174",
+    "contents": "",
+    "dirty": false,
+    "created": 1597406183080.0,
+    "source_on_save": false,
+    "relative_order": 3,
+    "properties": {
+        "cursorPosition": "1,13",
+        "scrollLine": "0"
+    },
+    "folds": "",
+    "lastKnownWriteTime": 1597412713,
+    "encoding": "UTF-8",
+    "collab_server": "",
+    "source_window": "",
+    "last_content_update": 1597412713184,
+    "read_only": false,
+    "read_only_alternatives": []
+}

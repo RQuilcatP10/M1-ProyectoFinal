@@ -1,0 +1,24 @@
+{
+    "id": "35833FEE",
+    "path": "~/ProyectosR/M1-ProyectoFinal/www/datos/Modelos/SVM.R",
+    "project_path": "www/datos/Modelos/SVM.R",
+    "type": "r_source",
+    "hash": "2376155957",
+    "contents": "",
+    "dirty": false,
+    "created": 1597397399626.0,
+    "source_on_save": false,
+    "relative_order": 4,
+    "properties": {
+        "cursorPosition": "10,0",
+        "scrollLine": "0"
+    },
+    "folds": "",
+    "lastKnownWriteTime": 1597415373,
+    "encoding": "UTF-8",
+    "collab_server": "",
+    "source_window": "",
+    "last_content_update": 1597415373867,
+    "read_only": false,
+    "read_only_alternatives": []
+}
