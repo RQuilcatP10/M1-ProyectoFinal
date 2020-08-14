@@ -1,0 +1,1272 @@
+{
+  "nbformat": 4,
+  "nbformat_minor": 0,
+  "metadata": {
+    "colab": {
+      "name": "Naive Bayes.ipynb",
+      "provenance": [],
+      "collapsed_sections": [],
+      "toc_visible": true
+    },
+    "kernelspec": {
+      "name": "ir",
+      "display_name": "R"
+    }
+  },
+  "cells": [
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "5fBp_LVPdOL8",
+        "colab_type": "text"
+      },
+      "source": [
+        "<h1 align=\"center\"><b>Naive Bayes</b>\n",
+        "<hr>"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "TCw7eUslftFz",
+        "colab_type": "text"
+      },
+      "source": [
+        "##Instalación de librerias"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "a6XL39OvfyVX",
+        "colab_type": "text"
+      },
+      "source": [
+        "1. Necesitamos instalar la libreria tidyverse\n",
+        "> Nos servirá porque brinda un conjunto de paquetes útiles para la manipulación de datos, tanto a nivel de operaciones con *dplyr* o el manejo dentro de una tabla"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "1aGzFIAZjbc0",
+        "colab_type": "code",
+        "colab": {
+          "base_uri": "https://localhost:8080/",
+          "height": 68
+        },
+        "outputId": "188f3583-fbd1-4a10-81ae-258d9223b11c"
+      },
+      "source": [
+        "install.packages('tidyverse')"
+      ],
+      "execution_count": 1,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "text": [
+            "Installing package into ‘/usr/local/lib/R/site-library’\n",
+            "(as ‘lib’ is unspecified)\n",
+            "\n"
+          ],
+          "name": "stderr"
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "LKLUvonaccoo",
+        "colab_type": "code",
+        "colab": {
+          "base_uri": "https://localhost:8080/",
+          "height": 204
+        },
+        "outputId": "d7fc0140-fbb5-4dda-d141-f3665a856d28"
+      },
+      "source": [
+        "library(tidyverse)"
+      ],
+      "execution_count": 2,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "text": [
+            "── \u001b[1mAttaching packages\u001b[22m ─────────────────────────────────────── tidyverse 1.3.0 ──\n",
+            "\n",
+            "\u001b[32m✔\u001b[39m \u001b[34mggplot2\u001b[39m 3.3.2     \u001b[32m✔\u001b[39m \u001b[34mpurrr  \u001b[39m 0.3.4\n",
+            "\u001b[32m✔\u001b[39m \u001b[34mtibble \u001b[39m 3.0.3     \u001b[32m✔\u001b[39m \u001b[34mdplyr  \u001b[39m 1.0.0\n",
+            "\u001b[32m✔\u001b[39m \u001b[34mtidyr  \u001b[39m 1.1.0     \u001b[32m✔\u001b[39m \u001b[34mstringr\u001b[39m 1.4.0\n",
+            "\u001b[32m✔\u001b[39m \u001b[34mreadr  \u001b[39m 1.3.1     \u001b[32m✔\u001b[39m \u001b[34mforcats\u001b[39m 0.5.0\n",
+            "\n",
+            "── \u001b[1mConflicts\u001b[22m ────────────────────────────────────────── tidyverse_conflicts() ──\n",
+            "\u001b[31m✖\u001b[39m \u001b[34mdplyr\u001b[39m::\u001b[32mfilter()\u001b[39m masks \u001b[34mstats\u001b[39m::filter()\n",
+            "\u001b[31m✖\u001b[39m \u001b[34mdplyr\u001b[39m::\u001b[32mlag()\u001b[39m    masks \u001b[34mstats\u001b[39m::lag()\n",
+            "\n"
+          ],
+          "name": "stderr"
+        }
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "WQuR2ljpqcpE",
+        "colab_type": "text"
+      },
+      "source": [
+        "2. Necesitamos instalar la libreria tidytext\n",
+        "> Nos servirá porque nos va a ayudar a tokenizar las palabras que se encuentren dentro del tweet, incluso a generar columnas por palabras"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "cpZo4x8YqTHx",
+        "colab_type": "code",
+        "colab": {
+          "base_uri": "https://localhost:8080/",
+          "height": 119
+        },
+        "outputId": "77a70b85-01ea-4c3f-e516-dc45efb27b94"
+      },
+      "source": [
+        "install.packages('tidytext')"
+      ],
+      "execution_count": 12,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "text": [
+            "Installing package into ‘/usr/local/lib/R/site-library’\n",
+            "(as ‘lib’ is unspecified)\n",
+            "\n",
+            "also installing the dependencies ‘SnowballC’, ‘hunspell’, ‘tokenizers’, ‘janeaustenr’\n",
+            "\n",
+            "\n"
+          ],
+          "name": "stderr"
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "H3B-vRSTqVyD",
+        "colab_type": "code",
+        "colab": {}
+      },
+      "source": [
+        "library(tidytext)"
+      ],
+      "execution_count": 13,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "F2d6MQx6j0_3",
+        "colab_type": "text"
+      },
+      "source": [
+        "3. Necesitamos instalar la libreria naivebayes\n",
+        "> Nos servirá porque brinda las funciones necesarias para poder aplicar el modelo *Naive Bayes* "
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "DRt_ZR9ukQh-",
+        "colab_type": "code",
+        "colab": {
+          "base_uri": "https://localhost:8080/",
+          "height": 68
+        },
+        "outputId": "9aa6be88-87de-4536-d62b-d8aa1b8098f8"
+      },
+      "source": [
+        "install.packages('naivebayes')"
+      ],
+      "execution_count": 3,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "text": [
+            "Installing package into ‘/usr/local/lib/R/site-library’\n",
+            "(as ‘lib’ is unspecified)\n",
+            "\n"
+          ],
+          "name": "stderr"
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "A5aocJ_Pj0VX",
+        "colab_type": "code",
+        "colab": {
+          "base_uri": "https://localhost:8080/",
+          "height": 51
+        },
+        "outputId": "b2d78838-1cdb-473d-98f5-613aa813f724"
+      },
+      "source": [
+        "library(naivebayes)"
+      ],
+      "execution_count": 4,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "text": [
+            "naivebayes 0.9.7 loaded\n",
+            "\n"
+          ],
+          "name": "stderr"
+        }
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "4tjFOjbarzOL",
+        "colab_type": "text"
+      },
+      "source": [
+        "4. Necesitamos instalar la libreria caret\n",
+        "> Nos servirá para poder generar nuestra matriz de confusión con los datos trabajados"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "RYJxtBo3rs-p",
+        "colab_type": "code",
+        "colab": {
+          "base_uri": "https://localhost:8080/",
+          "height": 139
+        },
+        "outputId": "ae336983-10fb-49ec-f62d-673fe6abf8dc"
+      },
+      "source": [
+        "install.packages('caret')"
+      ],
+      "execution_count": 22,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "text": [
+            "Installing package into ‘/usr/local/lib/R/site-library’\n",
+            "(as ‘lib’ is unspecified)\n",
+            "\n",
+            "also installing the dependencies ‘numDeriv’, ‘SQUAREM’, ‘lava’, ‘prodlim’, ‘iterators’, ‘data.table’, ‘gower’, ‘ipred’, ‘timeDate’, ‘foreach’, ‘plyr’, ‘ModelMetrics’, ‘reshape2’, ‘recipes’, ‘pROC’\n",
+            "\n",
+            "\n"
+          ],
+          "name": "stderr"
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "ARWm00AxrswG",
+        "colab_type": "code",
+        "colab": {
+          "base_uri": "https://localhost:8080/",
+          "height": 204
+        },
+        "outputId": "3f41c320-801c-41fc-a32c-ceb09f2af20c"
+      },
+      "source": [
+        "library(caret)"
+      ],
+      "execution_count": 23,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "text": [
+            "Loading required package: lattice\n",
+            "\n",
+            "\n",
+            "Attaching package: ‘caret’\n",
+            "\n",
+            "\n",
+            "The following object is masked from ‘package:purrr’:\n",
+            "\n",
+            "    lift\n",
+            "\n",
+            "\n"
+          ],
+          "name": "stderr"
+        }
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "H2Utw65pvpt8",
+        "colab_type": "text"
+      },
+      "source": [
+        "5. Necesitamos instalar la libreria e1071\n",
+        "> Funciona en conjunto con la libreria *caret*, en este caso, brindando soporte para la matriz de confusión"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "ttyCwVkstnzJ",
+        "colab_type": "code",
+        "colab": {
+          "base_uri": "https://localhost:8080/",
+          "height": 68
+        },
+        "outputId": "dd9f980d-0538-486c-c540-32a36f79d6f9"
+      },
+      "source": [
+        "install.packages('e1071')"
+      ],
+      "execution_count": 25,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "text": [
+            "Installing package into ‘/usr/local/lib/R/site-library’\n",
+            "(as ‘lib’ is unspecified)\n",
+            "\n"
+          ],
+          "name": "stderr"
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "rMyU73Twtmgz",
+        "colab_type": "code",
+        "colab": {}
+      },
+      "source": [
+        "library(e1071)"
+      ],
+      "execution_count": 26,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "m9vGF2GOl7Nb",
+        "colab_type": "text"
+      },
+      "source": [
+        "##Exploración y Limpieza de datos\n"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "657k2HjllPKd",
+        "colab_type": "text"
+      },
+      "source": [
+        "6. Cargamos nuestro dataset al servidor que ejecute R\n",
+        ">Se le indica como fileEncoding el tipo *latin1* para que pueda soportar los caracteres propios del español"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "tNkGUA68mzN9",
+        "colab_type": "code",
+        "colab": {}
+      },
+      "source": [
+        "tweets_df <- read.csv(file = 'tweets_mx.csv', stringsAsFactors = F, fileEncoding = \"latin1\")"
+      ],
+      "execution_count": 6,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "cVRV3ZgGoy7L",
+        "colab_type": "code",
+        "colab": {
+          "base_uri": "https://localhost:8080/",
+          "height": 1000
+        },
+        "outputId": "44f16b0e-bffe-492a-c4b2-4c0e4206da28"
+      },
+      "source": [
+        "tweets_df"
+      ],
+      "execution_count": 9,
+      "outputs": [
+        {
+          "output_type": "display_data",
+          "data": {
+            "text/plain": [
+              "     status_id    screen_name    \n",
+              "1    8.324215e+17 lopezobrador_  \n",
+              "2    8.331306e+17 lopezobrador_  \n",
+              "3    8.335013e+17 lopezobrador_  \n",
+              "4    8.338952e+17 lopezobrador_  \n",
+              "5    8.341838e+17 lopezobrador_  \n",
+              "6    8.345660e+17 lopezobrador_  \n",
+              "7    8.352975e+17 lopezobrador_  \n",
+              "8    8.359036e+17 lopezobrador_  \n",
+              "9    8.364175e+17 lopezobrador_  \n",
+              "10   8.367459e+17 lopezobrador_  \n",
+              "11   8.371286e+17 lopezobrador_  \n",
+              "12   8.375080e+17 lopezobrador_  \n",
+              "13   8.377851e+17 lopezobrador_  \n",
+              "14   8.378487e+17 lopezobrador_  \n",
+              "15   8.382306e+17 lopezobrador_  \n",
+              "16   8.384377e+17 lopezobrador_  \n",
+              "17   8.391611e+17 lopezobrador_  \n",
+              "18   8.394921e+17 lopezobrador_  \n",
+              "19   8.396262e+17 lopezobrador_  \n",
+              "20   8.399606e+17 lopezobrador_  \n",
+              "21   8.403855e+17 lopezobrador_  \n",
+              "22   8.407467e+17 lopezobrador_  \n",
+              "23   8.409970e+17 lopezobrador_  \n",
+              "24   8.412962e+17 lopezobrador_  \n",
+              "25   8.413536e+17 lopezobrador_  \n",
+              "26   8.414772e+17 lopezobrador_  \n",
+              "27   8.417064e+17 lopezobrador_  \n",
+              "28   8.421327e+17 lopezobrador_  \n",
+              "29   8.425398e+17 lopezobrador_  \n",
+              "30   8.425755e+17 lopezobrador_  \n",
+              "⋮    ⋮            ⋮              \n",
+              "1320 9.834751e+17 JuanCruzFranco \n",
+              "1321 9.834751e+17 ilvex          \n",
+              "1322 9.834751e+17 Haremymasmx    \n",
+              "1323 9.834751e+17 cata5581299141 \n",
+              "1324 9.834751e+17 IsaacPalafox   \n",
+              "1325 9.834751e+17 monkyher       \n",
+              "1326 9.834751e+17 JesusAlbertoZS \n",
+              "1327 9.834751e+17 _victoriacetina\n",
+              "1328 9.834751e+17 dibala01       \n",
+              "1329 9.834751e+17 OswaldoCruzCoro\n",
+              "1330 9.834751e+17 peabooddy      \n",
+              "1331 9.834751e+17 famoushorse    \n",
+              "1332 9.834751e+17 polodelara     \n",
+              "1333 9.834751e+17 DanielPensamien\n",
+              "1334 9.834751e+17 BecSantus      \n",
+              "1335 9.834751e+17 LizzyTorress   \n",
+              "1336 9.834751e+17 fer_hool       \n",
+              "1337 9.834751e+17 niehauscanary  \n",
+              "1338 9.834751e+17 PaolaVirrueta  \n",
+              "1339 9.834751e+17 HermanosVazquez\n",
+              "1340 9.834751e+17 davidtinoco1975\n",
+              "1341 9.834751e+17 GR_ABIELA      \n",
+              "1342 9.834751e+17 malamujerrp    \n",
+              "1343 9.834751e+17 StephanySexy2  \n",
+              "1344 9.834751e+17 HabeshaP       \n",
+              "1345 9.834751e+17 DafneFCh       \n",
+              "1346 9.834751e+17 09osuna        \n",
+              "1347 9.834751e+17 louder_thancat \n",
+              "1348 9.834751e+17 lilyindescai   \n",
+              "1349 9.834751e+17 perecerda      \n",
+              "     text                                                                                                                                                                                                                                                                                         \n",
+              "1    Josefina Vázquez Mota debe informar qué hizo con los mil millones de pesos que le autorizó EPN. Basta de corrupción e hipocresía PRIANISTA.                                                                                                                                                  \n",
+              "2    Ya ni la burla perdonan: bajaron 2 centavos la gasolina. En Guatemala no hay petróleo y es más barata la gasolina que en México. Corruptos.                                                                                                                                                  \n",
+              "3    Martín Moreno no votará por mí. Comprendo. Es un mal escritor dedicado a explotar la ignorancia y el conservadurismo de la sociedad. Gracias                                                                                                                                                 \n",
+              "4    En Chicago dije que iremos a Nueva York (ONU) y a Washington (CIDH) el 14 y 15 de marzo a denunciar órdenes-Trump https://t.co/nTeKURAIzv                                                                                                                                                    \n",
+              "5    Entérate y apoya con tu firma la denuncia contra las órdenes de Donald Trump https://t.co/FEICSPQ4pn                                                                                                                                                                                         \n",
+              "6    Qué república ni qué ocho cuartos, es la monarquía de la moronga azul. Corrupta e hipócrita. https://t.co/jYqIi4dFL8                                                                                                                                                                         \n",
+              "7    Salieron a defender a Yunes Linares, Calderón, su esposa, Anaya, el del PRI y una cosa que se llama FEPADE, en fin, toda la maleantada.                                                                                                                                                      \n",
+              "8    En 2010, la trasnacional Odebrecht entregó sobornos para operar una planta petroquímica en México. Debe investigarse a Calderón y socios.                                                                                                                                                    \n",
+              "9    Calderón dice donará su sueldo como expresidente, es el 8% de lo que recibe de pensión. De 54.2 mdp costará mantenerlo 50.8 millones al año https://t.co/mg25pNGIgE                                                                                                                          \n",
+              "10   ¡Las pensiones de los expresidentes de México no las tiene ni Obama! https://t.co/znYBYtIRQ2                                                                                                                                                                                                 \n",
+              "11   Les comparto la alegría del pueblo de Valle de Chalco. https://t.co/fl2vQVxWSx                                                                                                                                                                                                               \n",
+              "12   Aún cuando la PGR está al servicio del PRIAN, se presentará denuncia contra Josefina Vázquez Mota, por los mil millones que le autorizó EPN.                                                                                                                                                 \n",
+              "13   Pronto se terminará con los privilegios de los pequeños faraones del PRIAN. https://t.co/XsT6GER1fv                                                                                                                                                                                          \n",
+              "14   Estuvimos con la maestra Delfina en Atlacomulco. Nada tiene que ver este pueblo humilde y trabajador con el grupo corrupto de ese nombre. https://t.co/MZjVM9bD3r                                                                                                                            \n",
+              "15   Nos atacan porque MORENA está en primer lugar en las encuestas y, como dice la canción de Amaury, \"no lo van a impedir\", triunfaremos.                                                                                                                                                       \n",
+              "16   Estamos en contra de los políticos corruptos y de los traficantes de influencias, no de los empresarios honestos. https://t.co/iZo6jMCIxV                                                                                                                                                    \n",
+              "17   Lamento el fallecimiento de Jesús Silva-Herzog. Lo recuerdo bien, hijo del gran don Jesús, inteligente, honrado y con sentido del humor.                                                                                                                                                     \n",
+              "18   Apoya firmando la denuncia contra el muro y la persecución de migrantes. Llena el formato que encontrarás en la liga https://t.co/FEICSQ7FNX                                                                                                                                                 \n",
+              "19   Les comparto la entrevista que me hicieron en Imagen Noticias con motivo del Día de la Mujer https://t.co/bgcBIBOH9N                                                                                                                                                                         \n",
+              "20   Yunes impuso a su hijo de candidato del PAN en Veracruz y en Pánuco al que fue contralor de Duarte y el gran corrupto quiere debatir: ¡safo!                                                                                                                                                 \n",
+              "21   En Veracruz, Yunes, en vez de aplicar un plan de austeridad, en solo tres meses ha aumentado la deuda que dejó Duarte en 7 mil 500 mdp. https://t.co/s4bIqoWc8y                                                                                                                              \n",
+              "22   Llevamos 3 días en Veracruz, visitando 9 municipios. A la par, estamos avisando a familiares de migrantes que el lunes estaremos en New York https://t.co/64JMRY37s0                                                                                                                         \n",
+              "23   Apoyemos con nuestra firma la denuncia en defensa de nuestros paisanos migrantes https://t.co/FEICSQ7FNX https://t.co/aKyGiq0nHd                                                                                                                                                             \n",
+              "24   Como decía Zapata: \"el que no tenga miedo, que pase a firmar\". https://t.co/w14XmDBAfP                                                                                                                                                                                                       \n",
+              "25   Según Reforma, Yunes, el gobernador corrupto de Veracruz, es un justiciero y nosotros malvados. ¿Vale más ser cómplice que decir la verdad?                                                                                                                                                  \n",
+              "26   Gracias: rebasamos las 10 mil firmas en favor de migrantes. Si lo permite la nieve anunciada, la mafia y los provocadores, mañana a la ONU.                                                                                                                                                  \n",
+              "27   Por la nieve cerraron oficinas de la ONU, de todas maneras dejaremos al comisionado de Derechos Humanos un escrito en defensa de migrantes. https://t.co/lFloSK5TlF                                                                                                                          \n",
+              "28   Salimos de Washington a México.Cumplimos con la denuncia ante la CIDH.En NY se entregó carta a comisionado de la ONU https://t.co/LH7dKHSP5y                                                                                                                                                 \n",
+              "29   Se retracta el de Proceso sin dejar de editorializar. Supone que el cállate es parte de \"el acento del aludido\". Paladines de la objetividad                                                                                                                                                 \n",
+              "30   Está de moda provocarnos, ahora es Chong el que se sube al ring. ¿Qué les pasa, por qué tanto nerviosismo? Ya no vean encuestas. Serénense.                                                                                                                                                  \n",
+              "⋮    ⋮                                                                                                                                                                                                                                                                                            \n",
+              "1320 Tengo hambre.                                                                                                                                                                                                                                                                                \n",
+              "1321 ¿ Oye @DalasReview quieres humillar a @Mexivergas con 1 sola palabra ? Dile: P E Ñ A B O T #peñabot o no MEXI ? A mi no se me olvida tus inicios en Twitter !                                                                                                                                \n",
+              "1322 Modelo y Scort: Ailyn Wu Medidas:85/60/90 Estatura:1:72 Nacionalidad:Venezolana Edad:20 %natural atrevida, sensual, dispuesta a complacer tus fantasías Zonas que maneja: patriotismo,Revolucion,Col. Roma,Viaducto,Calz de tlalpam (55) 8370 9097 Disponible en#CDMX https://t.co/sXGRCukMDi\n",
+              "1323 Hola a todos mis lindos seguidores mañana tengo apartamento en la condesa preguntaby agendamos para masajes eroticos 5581299141 https://t.co/onuwIfBLEa                                                                                                                                      \n",
+              "1324 Cadena de oracion para que mañana agarre chamba                                                                                                                                                                                                                                              \n",
+              "1325 Yo también le creo porque @JoseAMeadeK es el candidato con las mejores propuestas #YoConMeade #UnaVozUnaFuerza https://t.co/Pbicw6l1qM                                                                                                                                                       \n",
+              "1326 Al chile una de las cosas más perronas que tengo en mi vida es mi amistad con la @_paolimeow sionoraza                                                                                                                                                                                       \n",
+              "1327 Y yo aquí, y tú allá                                                                                                                                                                                                                                                                         \n",
+              "1328 Muito ruim ficar sem celular                                                                                                                                                                                                                                                                 \n",
+              "1329 Necesitamos de su ayuda!!! La meta es alegrarles el día a 750 niños. https://t.co/e2Ysi5RI2R                                                                                                                                                                                                 \n",
+              "1330 No los veo amigos :v, en Universidad Tecnologica de Tecamac https://t.co/B2FB4EhHyi                                                                                                                                                                                                          \n",
+              "1331 If you think the impending global calamity can be prevented by a lose movement with no central authority to organize projects pls don't post anymore                                                                                                                                         \n",
+              "1332 Retweeted Leopoldo De Lara (@polodelara): Mañana en @FactorRadioPue por @ArgosCursa de 2a3pm la #AlfombraRoja @JssMedinaRojo PeriodistaPolitico @clau_ha nuestra SexologaExperta y la #SecciondeEspectaculos de... https://t.co/90u6Polt2d                                                   \n",
+              "1333 Catea FBI oficinas de Michel D. Cohen abogado de Trump https://t.co/SLV5aJ4sJb                                                                                                                                                                                                               \n",
+              "1334 https://t.co/uidJJnuYjh &gt;:O https://t.co/2VI63ekCO7                                                                                                                                                                                                                                       \n",
+              "1335 Mis amores los amoo!! son todos para mi no lo olviden!! Lizzy DE Tello Torres                                                                                                                                                                                                                \n",
+              "1336 Domingo llega yaaaaa!                                                                                                                                                                                                                                                                        \n",
+              "1337 Cualquiera diría que me gusta gastar dinero a lo tonto.                                                                                                                                                                                                                                      \n",
+              "1338 Con helicópteros combaten incendio en sierra de Coahuila https://t.co/L34Fip2ndH vía https://t.co/eVbJ2UVgs3 https://t.co/L34Fip2ndH                                                                                                                                                         \n",
+              "1339 La producción de vehículos de México cayó 10.9% en marzo a tasa interanual, en tanto que las exportaciones crecieron un 7.5%, informó el lunes la Asociación Mexicana de la Industria Automotriz (AMIA). #HVM #Contadores https://t.co/wv8EoX6sft                                            \n",
+              "1340 Sin necesidad de sacar visa. https://t.co/TNyTXlHVBK                                                                                                                                                                                                                                         \n",
+              "1341 Nuevos seguidores: 2, unfollowers: 3 (00:42) #TuitUtil https://t.co/W5RHXvtlOC                                                                                                                                                                                                               \n",
+              "1342 #SNEAKEREVOLUTION La apuesta por el futuro está hecha @TAFmx #Sneakerlover https://t.co/PaBtVanMTS                                                                                                                                                                                           \n",
+              "1343 soy tu muñequita que te hara sentir ricos orgasmos mi numero telfonico en mi perfil https://t.co/ViVvAOAsTb                                                                                                                                                                                  \n",
+              "1344 Compartimos la primera entrega de una colaboración semanal entre La Jornada Aguascalientes y Proyecto Habesha. Estaremos escribiendo reflexiones de la política nacional e internacional que estén menos centradas en el poder y más en las personas. https://t.co/fYWEufnOiY                \n",
+              "1345 Hay cosas contra las que uno no puede hacer ya nada. Y simplemente se rinde.                                                                                                                                                                                                                 \n",
+              "1346 Ser feliz implica aceptar limitaciones??                                                                                                                                                                                                                                                     \n",
+              "1347 Nada les parece... https://t.co/PGZPBF6YOF                                                                                                                                                                                                                                                   \n",
+              "1348 Cuando te empiezas a acordar de las cosas que hiciste en estado de ebriedad... https://t.co/wqp5iUUB2c                                                                                                                                                                                       \n",
+              "1349 Fulvio Martins https://t.co/Ez1s7CHRIE                                                                                                                                                                                                                                                       "
+            ],
+            "text/latex": "A data.frame: 1349 × 3\n\\begin{tabular}{lll}\n status\\_id & screen\\_name & text\\\\\n <dbl> & <chr> & <chr>\\\\\n\\hline\n\t 8.324215e+17 & lopezobrador\\_ & Josefina Vázquez Mota debe informar qué hizo con los mil millones de pesos que le autorizó EPN. Basta de corrupción e hipocresía PRIANISTA.                         \\\\\n\t 8.331306e+17 & lopezobrador\\_ & Ya ni la burla perdonan: bajaron 2 centavos la gasolina. En Guatemala no hay petróleo y es más barata la gasolina que en México. Corruptos.                         \\\\\n\t 8.335013e+17 & lopezobrador\\_ & Martín Moreno no votará por mí. Comprendo. Es un mal escritor dedicado a explotar la ignorancia y el conservadurismo de la sociedad. Gracias                        \\\\\n\t 8.338952e+17 & lopezobrador\\_ & En Chicago dije que iremos a Nueva York (ONU) y a Washington (CIDH) el 14 y 15 de marzo a denunciar órdenes-Trump https://t.co/nTeKURAIzv                           \\\\\n\t 8.341838e+17 & lopezobrador\\_ & Entérate y apoya con tu firma la denuncia contra las órdenes de Donald Trump https://t.co/FEICSPQ4pn                                                                \\\\\n\t 8.345660e+17 & lopezobrador\\_ & Qué república ni qué ocho cuartos, es la monarquía de la moronga azul. Corrupta e hipócrita. https://t.co/jYqIi4dFL8                                                \\\\\n\t 8.352975e+17 & lopezobrador\\_ & Salieron a defender a Yunes Linares, Calderón, su esposa, Anaya, el del PRI y una cosa que se llama FEPADE, en fin, toda la maleantada.                             \\\\\n\t 8.359036e+17 & lopezobrador\\_ & En 2010, la trasnacional Odebrecht entregó sobornos para operar una planta petroquímica en México. Debe investigarse a Calderón y socios.                           \\\\\n\t 8.364175e+17 & lopezobrador\\_ & Calderón dice donará su sueldo como expresidente, es el 8\\% de lo que recibe de pensión. De 54.2 mdp costará mantenerlo 50.8 millones al año https://t.co/mg25pNGIgE \\\\\n\t 8.367459e+17 & lopezobrador\\_ & ¡Las pensiones de los expresidentes de México no las tiene ni Obama! https://t.co/znYBYtIRQ2                                                                        \\\\\n\t 8.371286e+17 & lopezobrador\\_ & Les comparto la alegría del pueblo de Valle de Chalco. https://t.co/fl2vQVxWSx                                                                                      \\\\\n\t 8.375080e+17 & lopezobrador\\_ & Aún cuando la PGR está al servicio del PRIAN, se presentará denuncia contra Josefina Vázquez Mota, por los mil millones que le autorizó EPN.                        \\\\\n\t 8.377851e+17 & lopezobrador\\_ & Pronto se terminará con los privilegios de los pequeños faraones del PRIAN. https://t.co/XsT6GER1fv                                                                 \\\\\n\t 8.378487e+17 & lopezobrador\\_ & Estuvimos con la maestra Delfina en Atlacomulco. Nada tiene que ver este pueblo humilde y trabajador con el grupo corrupto de ese nombre. https://t.co/MZjVM9bD3r   \\\\\n\t 8.382306e+17 & lopezobrador\\_ & Nos atacan porque MORENA está en primer lugar en las encuestas y, como dice la canción de Amaury, \"no lo van a impedir\", triunfaremos.                              \\\\\n\t 8.384377e+17 & lopezobrador\\_ & Estamos en contra de los políticos corruptos y de los traficantes de influencias, no de los empresarios honestos. https://t.co/iZo6jMCIxV                           \\\\\n\t 8.391611e+17 & lopezobrador\\_ & Lamento el fallecimiento de Jesús Silva-Herzog. Lo recuerdo bien, hijo del gran don Jesús, inteligente, honrado y con sentido del humor.                            \\\\\n\t 8.394921e+17 & lopezobrador\\_ & Apoya firmando la denuncia contra el muro y la persecución de migrantes. Llena el formato que encontrarás en la liga https://t.co/FEICSQ7FNX                        \\\\\n\t 8.396262e+17 & lopezobrador\\_ & Les comparto la entrevista que me hicieron en Imagen Noticias con motivo del Día de la Mujer https://t.co/bgcBIBOH9N                                                \\\\\n\t 8.399606e+17 & lopezobrador\\_ & Yunes impuso a su hijo de candidato del PAN en Veracruz y en Pánuco al que fue contralor de Duarte y el gran corrupto quiere debatir: ¡safo!                        \\\\\n\t 8.403855e+17 & lopezobrador\\_ & En Veracruz, Yunes, en vez de aplicar un plan de austeridad, en solo tres meses ha aumentado la deuda que dejó Duarte en 7 mil 500 mdp. https://t.co/s4bIqoWc8y     \\\\\n\t 8.407467e+17 & lopezobrador\\_ & Llevamos 3 días en Veracruz, visitando 9 municipios. A la par, estamos avisando a familiares de migrantes que el lunes estaremos en New York https://t.co/64JMRY37s0\\\\\n\t 8.409970e+17 & lopezobrador\\_ & Apoyemos con nuestra firma la denuncia en defensa de nuestros paisanos migrantes https://t.co/FEICSQ7FNX https://t.co/aKyGiq0nHd                                    \\\\\n\t 8.412962e+17 & lopezobrador\\_ & Como decía Zapata: \"el que no tenga miedo, que pase a firmar\". https://t.co/w14XmDBAfP                                                                              \\\\\n\t 8.413536e+17 & lopezobrador\\_ & Según Reforma, Yunes, el gobernador corrupto de Veracruz, es un justiciero y nosotros malvados. ¿Vale más ser cómplice que decir la verdad?                         \\\\\n\t 8.414772e+17 & lopezobrador\\_ & Gracias: rebasamos las 10 mil firmas en favor de migrantes. Si lo permite la nieve anunciada, la mafia y los provocadores, mañana a la ONU.                         \\\\\n\t 8.417064e+17 & lopezobrador\\_ & Por la nieve cerraron oficinas de la ONU, de todas maneras dejaremos al comisionado de Derechos Humanos un escrito en defensa de migrantes. https://t.co/lFloSK5TlF \\\\\n\t 8.421327e+17 & lopezobrador\\_ & Salimos de Washington a México.Cumplimos con la denuncia ante la CIDH.En NY se entregó carta a comisionado de la ONU https://t.co/LH7dKHSP5y                        \\\\\n\t 8.425398e+17 & lopezobrador\\_ & Se retracta el de Proceso sin dejar de editorializar. Supone que el cállate es parte de \"el acento del aludido\". Paladines de la objetividad                        \\\\\n\t 8.425755e+17 & lopezobrador\\_ & Está de moda provocarnos, ahora es Chong el que se sube al ring. ¿Qué les pasa, por qué tanto nerviosismo? Ya no vean encuestas. Serénense.                         \\\\\n\t ⋮ & ⋮ & ⋮\\\\\n\t 9.834751e+17 & JuanCruzFranco  & Tengo hambre.                                                                                                                                                                                                                                                                                \\\\\n\t 9.834751e+17 & ilvex           & ¿ Oye @DalasReview quieres humillar a @Mexivergas con 1 sola palabra ? Dile: P E Ñ A B O T \\#peñabot o no MEXI ? A mi no se me olvida tus inicios en Twitter !                                                                                                                                \\\\\n\t 9.834751e+17 & Haremymasmx     & Modelo y Scort: Ailyn Wu Medidas:85/60/90 Estatura:1:72 Nacionalidad:Venezolana Edad:20 \\%natural atrevida, sensual, dispuesta a complacer tus fantasías Zonas que maneja: patriotismo,Revolucion,Col. Roma,Viaducto,Calz de tlalpam (55) 8370 9097 Disponible en\\#CDMX https://t.co/sXGRCukMDi\\\\\n\t 9.834751e+17 & cata5581299141  & Hola a todos mis lindos seguidores mañana tengo apartamento en la condesa preguntaby agendamos para masajes eroticos 5581299141 https://t.co/onuwIfBLEa                                                                                                                                      \\\\\n\t 9.834751e+17 & IsaacPalafox    & Cadena de oracion para que mañana agarre chamba                                                                                                                                                                                                                                              \\\\\n\t 9.834751e+17 & monkyher        & Yo también le creo porque @JoseAMeadeK es el candidato con las mejores propuestas \\#YoConMeade \\#UnaVozUnaFuerza https://t.co/Pbicw6l1qM                                                                                                                                                       \\\\\n\t 9.834751e+17 & JesusAlbertoZS  & Al chile una de las cosas más perronas que tengo en mi vida es mi amistad con la @\\_paolimeow sionoraza                                                                                                                                                                                       \\\\\n\t 9.834751e+17 & \\_victoriacetina & Y yo aquí, y tú allá                                                                                                                                                                                                                                                                         \\\\\n\t 9.834751e+17 & dibala01        & Muito ruim ficar sem celular                                                                                                                                                                                                                                                                 \\\\\n\t 9.834751e+17 & OswaldoCruzCoro & Necesitamos de su ayuda!!! La meta es alegrarles el día a 750 niños. https://t.co/e2Ysi5RI2R                                                                                                                                                                                                 \\\\\n\t 9.834751e+17 & peabooddy       & No los veo amigos :v, en Universidad Tecnologica de Tecamac https://t.co/B2FB4EhHyi                                                                                                                                                                                                          \\\\\n\t 9.834751e+17 & famoushorse     & If you think the impending global calamity can be prevented by a lose movement with no central authority to organize projects pls don't post anymore                                                                                                                                         \\\\\n\t 9.834751e+17 & polodelara      & Retweeted Leopoldo De Lara (@polodelara): Mañana en @FactorRadioPue por @ArgosCursa de 2a3pm la \\#AlfombraRoja @JssMedinaRojo PeriodistaPolitico @clau\\_ha nuestra SexologaExperta y la \\#SecciondeEspectaculos de... https://t.co/90u6Polt2d                                                   \\\\\n\t 9.834751e+17 & DanielPensamien & Catea FBI oficinas de Michel D. Cohen abogado de Trump https://t.co/SLV5aJ4sJb                                                                                                                                                                                                               \\\\\n\t 9.834751e+17 & BecSantus       & https://t.co/uidJJnuYjh \\&gt;:O https://t.co/2VI63ekCO7                                                                                                                                                                                                                                       \\\\\n\t 9.834751e+17 & LizzyTorress    & Mis amores los amoo!! son todos para mi no lo olviden!! Lizzy DE Tello Torres                                                                                                                                                                                                                \\\\\n\t 9.834751e+17 & fer\\_hool        & Domingo llega yaaaaa!                                                                                                                                                                                                                                                                        \\\\\n\t 9.834751e+17 & niehauscanary   & Cualquiera diría que me gusta gastar dinero a lo tonto.                                                                                                                                                                                                                                      \\\\\n\t 9.834751e+17 & PaolaVirrueta   & Con helicópteros combaten incendio en sierra de Coahuila https://t.co/L34Fip2ndH vía https://t.co/eVbJ2UVgs3 https://t.co/L34Fip2ndH                                                                                                                                                         \\\\\n\t 9.834751e+17 & HermanosVazquez & La producción de vehículos de México cayó 10.9\\% en marzo a tasa interanual, en tanto que las exportaciones crecieron un 7.5\\%, informó el lunes la Asociación Mexicana de la Industria Automotriz (AMIA). \\#HVM \\#Contadores https://t.co/wv8EoX6sft                                            \\\\\n\t 9.834751e+17 & davidtinoco1975 & Sin necesidad de sacar visa. https://t.co/TNyTXlHVBK                                                                                                                                                                                                                                         \\\\\n\t 9.834751e+17 & GR\\_ABIELA       & Nuevos seguidores: 2, unfollowers: 3 (00:42) \\#TuitUtil https://t.co/W5RHXvtlOC                                                                                                                                                                                                               \\\\\n\t 9.834751e+17 & malamujerrp     & \\#SNEAKEREVOLUTION La apuesta por el futuro está hecha @TAFmx \\#Sneakerlover https://t.co/PaBtVanMTS                                                                                                                                                                                           \\\\\n\t 9.834751e+17 & StephanySexy2   & soy tu muñequita que te hara sentir ricos orgasmos mi numero telfonico en mi perfil https://t.co/ViVvAOAsTb                                                                                                                                                                                  \\\\\n\t 9.834751e+17 & HabeshaP        & Compartimos la primera entrega de una colaboración semanal entre La Jornada Aguascalientes y Proyecto Habesha. Estaremos escribiendo reflexiones de la política nacional e internacional que estén menos centradas en el poder y más en las personas. https://t.co/fYWEufnOiY                \\\\\n\t 9.834751e+17 & DafneFCh        & Hay cosas contra las que uno no puede hacer ya nada. Y simplemente se rinde.                                                                                                                                                                                                                 \\\\\n\t 9.834751e+17 & 09osuna         & Ser feliz implica aceptar limitaciones??                                                                                                                                                                                                                                                     \\\\\n\t 9.834751e+17 & louder\\_thancat  & Nada les parece... https://t.co/PGZPBF6YOF                                                                                                                                                                                                                                                   \\\\\n\t 9.834751e+17 & lilyindescai    & Cuando te empiezas a acordar de las cosas que hiciste en estado de ebriedad... https://t.co/wqp5iUUB2c                                                                                                                                                                                       \\\\\n\t 9.834751e+17 & perecerda       & Fulvio Martins https://t.co/Ez1s7CHRIE                                                                                                                                                                                                                                                       \\\\\n\\end{tabular}\n",
+            "text/markdown": "\nA data.frame: 1349 × 3\n\n| status_id &lt;dbl&gt; | screen_name &lt;chr&gt; | text &lt;chr&gt; |\n|---|---|---|\n| 8.324215e+17 | lopezobrador_ | Josefina Vázquez Mota debe informar qué hizo con los mil millones de pesos que le autorizó EPN. Basta de corrupción e hipocresía PRIANISTA.                          |\n| 8.331306e+17 | lopezobrador_ | Ya ni la burla perdonan: bajaron 2 centavos la gasolina. En Guatemala no hay petróleo y es más barata la gasolina que en México. Corruptos.                          |\n| 8.335013e+17 | lopezobrador_ | Martín Moreno no votará por mí. Comprendo. Es un mal escritor dedicado a explotar la ignorancia y el conservadurismo de la sociedad. Gracias                         |\n| 8.338952e+17 | lopezobrador_ | En Chicago dije que iremos a Nueva York (ONU) y a Washington (CIDH) el 14 y 15 de marzo a denunciar órdenes-Trump https://t.co/nTeKURAIzv                            |\n| 8.341838e+17 | lopezobrador_ | Entérate y apoya con tu firma la denuncia contra las órdenes de Donald Trump https://t.co/FEICSPQ4pn                                                                 |\n| 8.345660e+17 | lopezobrador_ | Qué república ni qué ocho cuartos, es la monarquía de la moronga azul. Corrupta e hipócrita. https://t.co/jYqIi4dFL8                                                 |\n| 8.352975e+17 | lopezobrador_ | Salieron a defender a Yunes Linares, Calderón, su esposa, Anaya, el del PRI y una cosa que se llama FEPADE, en fin, toda la maleantada.                              |\n| 8.359036e+17 | lopezobrador_ | En 2010, la trasnacional Odebrecht entregó sobornos para operar una planta petroquímica en México. Debe investigarse a Calderón y socios.                            |\n| 8.364175e+17 | lopezobrador_ | Calderón dice donará su sueldo como expresidente, es el 8% de lo que recibe de pensión. De 54.2 mdp costará mantenerlo 50.8 millones al año https://t.co/mg25pNGIgE  |\n| 8.367459e+17 | lopezobrador_ | ¡Las pensiones de los expresidentes de México no las tiene ni Obama! https://t.co/znYBYtIRQ2                                                                         |\n| 8.371286e+17 | lopezobrador_ | Les comparto la alegría del pueblo de Valle de Chalco. https://t.co/fl2vQVxWSx                                                                                       |\n| 8.375080e+17 | lopezobrador_ | Aún cuando la PGR está al servicio del PRIAN, se presentará denuncia contra Josefina Vázquez Mota, por los mil millones que le autorizó EPN.                         |\n| 8.377851e+17 | lopezobrador_ | Pronto se terminará con los privilegios de los pequeños faraones del PRIAN. https://t.co/XsT6GER1fv                                                                  |\n| 8.378487e+17 | lopezobrador_ | Estuvimos con la maestra Delfina en Atlacomulco. Nada tiene que ver este pueblo humilde y trabajador con el grupo corrupto de ese nombre. https://t.co/MZjVM9bD3r    |\n| 8.382306e+17 | lopezobrador_ | Nos atacan porque MORENA está en primer lugar en las encuestas y, como dice la canción de Amaury, \"no lo van a impedir\", triunfaremos.                               |\n| 8.384377e+17 | lopezobrador_ | Estamos en contra de los políticos corruptos y de los traficantes de influencias, no de los empresarios honestos. https://t.co/iZo6jMCIxV                            |\n| 8.391611e+17 | lopezobrador_ | Lamento el fallecimiento de Jesús Silva-Herzog. Lo recuerdo bien, hijo del gran don Jesús, inteligente, honrado y con sentido del humor.                             |\n| 8.394921e+17 | lopezobrador_ | Apoya firmando la denuncia contra el muro y la persecución de migrantes. Llena el formato que encontrarás en la liga https://t.co/FEICSQ7FNX                         |\n| 8.396262e+17 | lopezobrador_ | Les comparto la entrevista que me hicieron en Imagen Noticias con motivo del Día de la Mujer https://t.co/bgcBIBOH9N                                                 |\n| 8.399606e+17 | lopezobrador_ | Yunes impuso a su hijo de candidato del PAN en Veracruz y en Pánuco al que fue contralor de Duarte y el gran corrupto quiere debatir: ¡safo!                         |\n| 8.403855e+17 | lopezobrador_ | En Veracruz, Yunes, en vez de aplicar un plan de austeridad, en solo tres meses ha aumentado la deuda que dejó Duarte en 7 mil 500 mdp. https://t.co/s4bIqoWc8y      |\n| 8.407467e+17 | lopezobrador_ | Llevamos 3 días en Veracruz, visitando 9 municipios. A la par, estamos avisando a familiares de migrantes que el lunes estaremos en New York https://t.co/64JMRY37s0 |\n| 8.409970e+17 | lopezobrador_ | Apoyemos con nuestra firma la denuncia en defensa de nuestros paisanos migrantes https://t.co/FEICSQ7FNX https://t.co/aKyGiq0nHd                                     |\n| 8.412962e+17 | lopezobrador_ | Como decía Zapata: \"el que no tenga miedo, que pase a firmar\". https://t.co/w14XmDBAfP                                                                               |\n| 8.413536e+17 | lopezobrador_ | Según Reforma, Yunes, el gobernador corrupto de Veracruz, es un justiciero y nosotros malvados. ¿Vale más ser cómplice que decir la verdad?                          |\n| 8.414772e+17 | lopezobrador_ | Gracias: rebasamos las 10 mil firmas en favor de migrantes. Si lo permite la nieve anunciada, la mafia y los provocadores, mañana a la ONU.                          |\n| 8.417064e+17 | lopezobrador_ | Por la nieve cerraron oficinas de la ONU, de todas maneras dejaremos al comisionado de Derechos Humanos un escrito en defensa de migrantes. https://t.co/lFloSK5TlF  |\n| 8.421327e+17 | lopezobrador_ | Salimos de Washington a México.Cumplimos con la denuncia ante la CIDH.En NY se entregó carta a comisionado de la ONU https://t.co/LH7dKHSP5y                         |\n| 8.425398e+17 | lopezobrador_ | Se retracta el de Proceso sin dejar de editorializar. Supone que el cállate es parte de \"el acento del aludido\". Paladines de la objetividad                         |\n| 8.425755e+17 | lopezobrador_ | Está de moda provocarnos, ahora es Chong el que se sube al ring. ¿Qué les pasa, por qué tanto nerviosismo? Ya no vean encuestas. Serénense.                          |\n| ⋮ | ⋮ | ⋮ |\n| 9.834751e+17 | JuanCruzFranco  | Tengo hambre.                                                                                                                                                                                                                                                                                 |\n| 9.834751e+17 | ilvex           | ¿ Oye @DalasReview quieres humillar a @Mexivergas con 1 sola palabra ? Dile: P E Ñ A B O T #peñabot o no MEXI ? A mi no se me olvida tus inicios en Twitter !                                                                                                                                 |\n| 9.834751e+17 | Haremymasmx     | Modelo y Scort: Ailyn Wu Medidas:85/60/90 Estatura:1:72 Nacionalidad:Venezolana Edad:20 %natural atrevida, sensual, dispuesta a complacer tus fantasías Zonas que maneja: patriotismo,Revolucion,Col. Roma,Viaducto,Calz de tlalpam (55) 8370 9097 Disponible en#CDMX https://t.co/sXGRCukMDi |\n| 9.834751e+17 | cata5581299141  | Hola a todos mis lindos seguidores mañana tengo apartamento en la condesa preguntaby agendamos para masajes eroticos 5581299141 https://t.co/onuwIfBLEa                                                                                                                                       |\n| 9.834751e+17 | IsaacPalafox    | Cadena de oracion para que mañana agarre chamba                                                                                                                                                                                                                                               |\n| 9.834751e+17 | monkyher        | Yo también le creo porque @JoseAMeadeK es el candidato con las mejores propuestas #YoConMeade #UnaVozUnaFuerza https://t.co/Pbicw6l1qM                                                                                                                                                        |\n| 9.834751e+17 | JesusAlbertoZS  | Al chile una de las cosas más perronas que tengo en mi vida es mi amistad con la @_paolimeow sionoraza                                                                                                                                                                                        |\n| 9.834751e+17 | _victoriacetina | Y yo aquí, y tú allá                                                                                                                                                                                                                                                                          |\n| 9.834751e+17 | dibala01        | Muito ruim ficar sem celular                                                                                                                                                                                                                                                                  |\n| 9.834751e+17 | OswaldoCruzCoro | Necesitamos de su ayuda!!! La meta es alegrarles el día a 750 niños. https://t.co/e2Ysi5RI2R                                                                                                                                                                                                  |\n| 9.834751e+17 | peabooddy       | No los veo amigos :v, en Universidad Tecnologica de Tecamac https://t.co/B2FB4EhHyi                                                                                                                                                                                                           |\n| 9.834751e+17 | famoushorse     | If you think the impending global calamity can be prevented by a lose movement with no central authority to organize projects pls don't post anymore                                                                                                                                          |\n| 9.834751e+17 | polodelara      | Retweeted Leopoldo De Lara (@polodelara): Mañana en @FactorRadioPue por @ArgosCursa de 2a3pm la #AlfombraRoja @JssMedinaRojo PeriodistaPolitico @clau_ha nuestra SexologaExperta y la #SecciondeEspectaculos de... https://t.co/90u6Polt2d                                                    |\n| 9.834751e+17 | DanielPensamien | Catea FBI oficinas de Michel D. Cohen abogado de Trump https://t.co/SLV5aJ4sJb                                                                                                                                                                                                                |\n| 9.834751e+17 | BecSantus       | https://t.co/uidJJnuYjh &amp;gt;:O https://t.co/2VI63ekCO7                                                                                                                                                                                                                                        |\n| 9.834751e+17 | LizzyTorress    | Mis amores los amoo!! son todos para mi no lo olviden!! Lizzy DE Tello Torres                                                                                                                                                                                                                 |\n| 9.834751e+17 | fer_hool        | Domingo llega yaaaaa!                                                                                                                                                                                                                                                                         |\n| 9.834751e+17 | niehauscanary   | Cualquiera diría que me gusta gastar dinero a lo tonto.                                                                                                                                                                                                                                       |\n| 9.834751e+17 | PaolaVirrueta   | Con helicópteros combaten incendio en sierra de Coahuila https://t.co/L34Fip2ndH vía https://t.co/eVbJ2UVgs3 https://t.co/L34Fip2ndH                                                                                                                                                          |\n| 9.834751e+17 | HermanosVazquez | La producción de vehículos de México cayó 10.9% en marzo a tasa interanual, en tanto que las exportaciones crecieron un 7.5%, informó el lunes la Asociación Mexicana de la Industria Automotriz (AMIA). #HVM #Contadores https://t.co/wv8EoX6sft                                             |\n| 9.834751e+17 | davidtinoco1975 | Sin necesidad de sacar visa. https://t.co/TNyTXlHVBK                                                                                                                                                                                                                                          |\n| 9.834751e+17 | GR_ABIELA       | Nuevos seguidores: 2, unfollowers: 3 (00:42) #TuitUtil https://t.co/W5RHXvtlOC                                                                                                                                                                                                                |\n| 9.834751e+17 | malamujerrp     | #SNEAKEREVOLUTION La apuesta por el futuro está hecha @TAFmx #Sneakerlover https://t.co/PaBtVanMTS                                                                                                                                                                                            |\n| 9.834751e+17 | StephanySexy2   | soy tu muñequita que te hara sentir ricos orgasmos mi numero telfonico en mi perfil https://t.co/ViVvAOAsTb                                                                                                                                                                                   |\n| 9.834751e+17 | HabeshaP        | Compartimos la primera entrega de una colaboración semanal entre La Jornada Aguascalientes y Proyecto Habesha. Estaremos escribiendo reflexiones de la política nacional e internacional que estén menos centradas en el poder y más en las personas. https://t.co/fYWEufnOiY                 |\n| 9.834751e+17 | DafneFCh        | Hay cosas contra las que uno no puede hacer ya nada. Y simplemente se rinde.                                                                                                                                                                                                                  |\n| 9.834751e+17 | 09osuna         | Ser feliz implica aceptar limitaciones??                                                                                                                                                                                                                                                      |\n| 9.834751e+17 | louder_thancat  | Nada les parece... https://t.co/PGZPBF6YOF                                                                                                                                                                                                                                                    |\n| 9.834751e+17 | lilyindescai    | Cuando te empiezas a acordar de las cosas que hiciste en estado de ebriedad... https://t.co/wqp5iUUB2c                                                                                                                                                                                        |\n| 9.834751e+17 | perecerda       | Fulvio Martins https://t.co/Ez1s7CHRIE                                                                                                                                                                                                                                                        |\n\n",
+            "text/html": [
+              "<table>\n",
+              "<caption>A data.frame: 1349 × 3</caption>\n",
+              "<thead>\n",
+              "\t<tr><th scope=col>status_id</th><th scope=col>screen_name</th><th scope=col>text</th></tr>\n",
+              "\t<tr><th scope=col>&lt;dbl&gt;</th><th scope=col>&lt;chr&gt;</th><th scope=col>&lt;chr&gt;</th></tr>\n",
+              "</thead>\n",
+              "<tbody>\n",
+              "\t<tr><td>8.324215e+17</td><td>lopezobrador_</td><td>Josefina Vázquez Mota debe informar qué hizo con los mil millones de pesos que le autorizó EPN. Basta de corrupción e hipocresía PRIANISTA.                         </td></tr>\n",
+              "\t<tr><td>8.331306e+17</td><td>lopezobrador_</td><td>Ya ni la burla perdonan: bajaron 2 centavos la gasolina. En Guatemala no hay petróleo y es más barata la gasolina que en México. Corruptos.                         </td></tr>\n",
+              "\t<tr><td>8.335013e+17</td><td>lopezobrador_</td><td>Martín Moreno no votará por mí. Comprendo. Es un mal escritor dedicado a explotar la ignorancia y el conservadurismo de la sociedad. Gracias                        </td></tr>\n",
+              "\t<tr><td>8.338952e+17</td><td>lopezobrador_</td><td>En Chicago dije que iremos a Nueva York (ONU) y a Washington (CIDH) el 14 y 15 de marzo a denunciar órdenes-Trump https://t.co/nTeKURAIzv                           </td></tr>\n",
+              "\t<tr><td>8.341838e+17</td><td>lopezobrador_</td><td>Entérate y apoya con tu firma la denuncia contra las órdenes de Donald Trump https://t.co/FEICSPQ4pn                                                                </td></tr>\n",
+              "\t<tr><td>8.345660e+17</td><td>lopezobrador_</td><td>Qué república ni qué ocho cuartos, es la monarquía de la moronga azul. Corrupta e hipócrita. https://t.co/jYqIi4dFL8                                                </td></tr>\n",
+              "\t<tr><td>8.352975e+17</td><td>lopezobrador_</td><td>Salieron a defender a Yunes Linares, Calderón, su esposa, Anaya, el del PRI y una cosa que se llama FEPADE, en fin, toda la maleantada.                             </td></tr>\n",
+              "\t<tr><td>8.359036e+17</td><td>lopezobrador_</td><td>En 2010, la trasnacional Odebrecht entregó sobornos para operar una planta petroquímica en México. Debe investigarse a Calderón y socios.                           </td></tr>\n",
+              "\t<tr><td>8.364175e+17</td><td>lopezobrador_</td><td>Calderón dice donará su sueldo como expresidente, es el 8% de lo que recibe de pensión. De 54.2 mdp costará mantenerlo 50.8 millones al año https://t.co/mg25pNGIgE </td></tr>\n",
+              "\t<tr><td>8.367459e+17</td><td>lopezobrador_</td><td>¡Las pensiones de los expresidentes de México no las tiene ni Obama! https://t.co/znYBYtIRQ2                                                                        </td></tr>\n",
+              "\t<tr><td>8.371286e+17</td><td>lopezobrador_</td><td>Les comparto la alegría del pueblo de Valle de Chalco. https://t.co/fl2vQVxWSx                                                                                      </td></tr>\n",
+              "\t<tr><td>8.375080e+17</td><td>lopezobrador_</td><td>Aún cuando la PGR está al servicio del PRIAN, se presentará denuncia contra Josefina Vázquez Mota, por los mil millones que le autorizó EPN.                        </td></tr>\n",
+              "\t<tr><td>8.377851e+17</td><td>lopezobrador_</td><td>Pronto se terminará con los privilegios de los pequeños faraones del PRIAN. https://t.co/XsT6GER1fv                                                                 </td></tr>\n",
+              "\t<tr><td>8.378487e+17</td><td>lopezobrador_</td><td>Estuvimos con la maestra Delfina en Atlacomulco. Nada tiene que ver este pueblo humilde y trabajador con el grupo corrupto de ese nombre. https://t.co/MZjVM9bD3r   </td></tr>\n",
+              "\t<tr><td>8.382306e+17</td><td>lopezobrador_</td><td>Nos atacan porque MORENA está en primer lugar en las encuestas y, como dice la canción de Amaury, \"no lo van a impedir\", triunfaremos.                              </td></tr>\n",
+              "\t<tr><td>8.384377e+17</td><td>lopezobrador_</td><td>Estamos en contra de los políticos corruptos y de los traficantes de influencias, no de los empresarios honestos. https://t.co/iZo6jMCIxV                           </td></tr>\n",
+              "\t<tr><td>8.391611e+17</td><td>lopezobrador_</td><td>Lamento el fallecimiento de Jesús Silva-Herzog. Lo recuerdo bien, hijo del gran don Jesús, inteligente, honrado y con sentido del humor.                            </td></tr>\n",
+              "\t<tr><td>8.394921e+17</td><td>lopezobrador_</td><td>Apoya firmando la denuncia contra el muro y la persecución de migrantes. Llena el formato que encontrarás en la liga https://t.co/FEICSQ7FNX                        </td></tr>\n",
+              "\t<tr><td>8.396262e+17</td><td>lopezobrador_</td><td>Les comparto la entrevista que me hicieron en Imagen Noticias con motivo del Día de la Mujer https://t.co/bgcBIBOH9N                                                </td></tr>\n",
+              "\t<tr><td>8.399606e+17</td><td>lopezobrador_</td><td>Yunes impuso a su hijo de candidato del PAN en Veracruz y en Pánuco al que fue contralor de Duarte y el gran corrupto quiere debatir: ¡safo!                        </td></tr>\n",
+              "\t<tr><td>8.403855e+17</td><td>lopezobrador_</td><td>En Veracruz, Yunes, en vez de aplicar un plan de austeridad, en solo tres meses ha aumentado la deuda que dejó Duarte en 7 mil 500 mdp. https://t.co/s4bIqoWc8y     </td></tr>\n",
+              "\t<tr><td>8.407467e+17</td><td>lopezobrador_</td><td>Llevamos 3 días en Veracruz, visitando 9 municipios. A la par, estamos avisando a familiares de migrantes que el lunes estaremos en New York https://t.co/64JMRY37s0</td></tr>\n",
+              "\t<tr><td>8.409970e+17</td><td>lopezobrador_</td><td>Apoyemos con nuestra firma la denuncia en defensa de nuestros paisanos migrantes https://t.co/FEICSQ7FNX https://t.co/aKyGiq0nHd                                    </td></tr>\n",
+              "\t<tr><td>8.412962e+17</td><td>lopezobrador_</td><td>Como decía Zapata: \"el que no tenga miedo, que pase a firmar\". https://t.co/w14XmDBAfP                                                                              </td></tr>\n",
+              "\t<tr><td>8.413536e+17</td><td>lopezobrador_</td><td>Según Reforma, Yunes, el gobernador corrupto de Veracruz, es un justiciero y nosotros malvados. ¿Vale más ser cómplice que decir la verdad?                         </td></tr>\n",
+              "\t<tr><td>8.414772e+17</td><td>lopezobrador_</td><td>Gracias: rebasamos las 10 mil firmas en favor de migrantes. Si lo permite la nieve anunciada, la mafia y los provocadores, mañana a la ONU.                         </td></tr>\n",
+              "\t<tr><td>8.417064e+17</td><td>lopezobrador_</td><td>Por la nieve cerraron oficinas de la ONU, de todas maneras dejaremos al comisionado de Derechos Humanos un escrito en defensa de migrantes. https://t.co/lFloSK5TlF </td></tr>\n",
+              "\t<tr><td>8.421327e+17</td><td>lopezobrador_</td><td>Salimos de Washington a México.Cumplimos con la denuncia ante la CIDH.En NY se entregó carta a comisionado de la ONU https://t.co/LH7dKHSP5y                        </td></tr>\n",
+              "\t<tr><td>8.425398e+17</td><td>lopezobrador_</td><td>Se retracta el de Proceso sin dejar de editorializar. Supone que el cállate es parte de \"el acento del aludido\". Paladines de la objetividad                        </td></tr>\n",
+              "\t<tr><td>8.425755e+17</td><td>lopezobrador_</td><td>Está de moda provocarnos, ahora es Chong el que se sube al ring. ¿Qué les pasa, por qué tanto nerviosismo? Ya no vean encuestas. Serénense.                         </td></tr>\n",
+              "\t<tr><td>⋮</td><td>⋮</td><td>⋮</td></tr>\n",
+              "\t<tr><td>9.834751e+17</td><td>JuanCruzFranco </td><td>Tengo hambre.                                                                                                                                                                                                                                                                                </td></tr>\n",
+              "\t<tr><td>9.834751e+17</td><td>ilvex          </td><td>¿ Oye @DalasReview quieres humillar a @Mexivergas con 1 sola palabra ? Dile: P E Ñ A B O T #peñabot o no MEXI ? A mi no se me olvida tus inicios en Twitter !                                                                                                                                </td></tr>\n",
+              "\t<tr><td>9.834751e+17</td><td>Haremymasmx    </td><td>Modelo y Scort: Ailyn Wu Medidas:85/60/90 Estatura:1:72 Nacionalidad:Venezolana Edad:20 %natural atrevida, sensual, dispuesta a complacer tus fantasías Zonas que maneja: patriotismo,Revolucion,Col. Roma,Viaducto,Calz de tlalpam (55) 8370 9097 Disponible en#CDMX https://t.co/sXGRCukMDi</td></tr>\n",
+              "\t<tr><td>9.834751e+17</td><td>cata5581299141 </td><td>Hola a todos mis lindos seguidores mañana tengo apartamento en la condesa preguntaby agendamos para masajes eroticos 5581299141 https://t.co/onuwIfBLEa                                                                                                                                      </td></tr>\n",
+              "\t<tr><td>9.834751e+17</td><td>IsaacPalafox   </td><td>Cadena de oracion para que mañana agarre chamba                                                                                                                                                                                                                                              </td></tr>\n",
+              "\t<tr><td>9.834751e+17</td><td>monkyher       </td><td>Yo también le creo porque @JoseAMeadeK es el candidato con las mejores propuestas #YoConMeade #UnaVozUnaFuerza https://t.co/Pbicw6l1qM                                                                                                                                                       </td></tr>\n",
+              "\t<tr><td>9.834751e+17</td><td>JesusAlbertoZS </td><td>Al chile una de las cosas más perronas que tengo en mi vida es mi amistad con la @_paolimeow sionoraza                                                                                                                                                                                       </td></tr>\n",
+              "\t<tr><td>9.834751e+17</td><td>_victoriacetina</td><td>Y yo aquí, y tú allá                                                                                                                                                                                                                                                                         </td></tr>\n",
+              "\t<tr><td>9.834751e+17</td><td>dibala01       </td><td>Muito ruim ficar sem celular                                                                                                                                                                                                                                                                 </td></tr>\n",
+              "\t<tr><td>9.834751e+17</td><td>OswaldoCruzCoro</td><td>Necesitamos de su ayuda!!! La meta es alegrarles el día a 750 niños. https://t.co/e2Ysi5RI2R                                                                                                                                                                                                 </td></tr>\n",
+              "\t<tr><td>9.834751e+17</td><td>peabooddy      </td><td>No los veo amigos :v, en Universidad Tecnologica de Tecamac https://t.co/B2FB4EhHyi                                                                                                                                                                                                          </td></tr>\n",
+              "\t<tr><td>9.834751e+17</td><td>famoushorse    </td><td>If you think the impending global calamity can be prevented by a lose movement with no central authority to organize projects pls don't post anymore                                                                                                                                         </td></tr>\n",
+              "\t<tr><td>9.834751e+17</td><td>polodelara     </td><td>Retweeted Leopoldo De Lara (@polodelara): Mañana en @FactorRadioPue por @ArgosCursa de 2a3pm la #AlfombraRoja @JssMedinaRojo PeriodistaPolitico @clau_ha nuestra SexologaExperta y la #SecciondeEspectaculos de... https://t.co/90u6Polt2d                                                   </td></tr>\n",
+              "\t<tr><td>9.834751e+17</td><td>DanielPensamien</td><td>Catea FBI oficinas de Michel D. Cohen abogado de Trump https://t.co/SLV5aJ4sJb                                                                                                                                                                                                               </td></tr>\n",
+              "\t<tr><td>9.834751e+17</td><td><span style=white-space:pre-wrap>BecSantus      </span></td><td><span style=white-space:pre-wrap>https://t.co/uidJJnuYjh &amp;gt;:O https://t.co/2VI63ekCO7                                                                                                                                                                                                                                       </span></td></tr>\n",
+              "\t<tr><td>9.834751e+17</td><td>LizzyTorress   </td><td>Mis amores los amoo!! son todos para mi no lo olviden!! Lizzy DE Tello Torres                                                                                                                                                                                                                </td></tr>\n",
+              "\t<tr><td>9.834751e+17</td><td>fer_hool       </td><td>Domingo llega yaaaaa!                                                                                                                                                                                                                                                                        </td></tr>\n",
+              "\t<tr><td>9.834751e+17</td><td>niehauscanary  </td><td>Cualquiera diría que me gusta gastar dinero a lo tonto.                                                                                                                                                                                                                                      </td></tr>\n",
+              "\t<tr><td>9.834751e+17</td><td>PaolaVirrueta  </td><td>Con helicópteros combaten incendio en sierra de Coahuila https://t.co/L34Fip2ndH vía https://t.co/eVbJ2UVgs3 https://t.co/L34Fip2ndH                                                                                                                                                         </td></tr>\n",
+              "\t<tr><td>9.834751e+17</td><td>HermanosVazquez</td><td>La producción de vehículos de México cayó 10.9% en marzo a tasa interanual, en tanto que las exportaciones crecieron un 7.5%, informó el lunes la Asociación Mexicana de la Industria Automotriz (AMIA). #HVM #Contadores https://t.co/wv8EoX6sft                                            </td></tr>\n",
+              "\t<tr><td>9.834751e+17</td><td>davidtinoco1975</td><td>Sin necesidad de sacar visa. https://t.co/TNyTXlHVBK                                                                                                                                                                                                                                         </td></tr>\n",
+              "\t<tr><td>9.834751e+17</td><td>GR_ABIELA      </td><td>Nuevos seguidores: 2, unfollowers: 3 (00:42) #TuitUtil https://t.co/W5RHXvtlOC                                                                                                                                                                                                               </td></tr>\n",
+              "\t<tr><td>9.834751e+17</td><td>malamujerrp    </td><td>#SNEAKEREVOLUTION La apuesta por el futuro está hecha @TAFmx #Sneakerlover https://t.co/PaBtVanMTS                                                                                                                                                                                           </td></tr>\n",
+              "\t<tr><td>9.834751e+17</td><td>StephanySexy2  </td><td>soy tu muñequita que te hara sentir ricos orgasmos mi numero telfonico en mi perfil https://t.co/ViVvAOAsTb                                                                                                                                                                                  </td></tr>\n",
+              "\t<tr><td>9.834751e+17</td><td>HabeshaP       </td><td>Compartimos la primera entrega de una colaboración semanal entre La Jornada Aguascalientes y Proyecto Habesha. Estaremos escribiendo reflexiones de la política nacional e internacional que estén menos centradas en el poder y más en las personas. https://t.co/fYWEufnOiY                </td></tr>\n",
+              "\t<tr><td>9.834751e+17</td><td>DafneFCh       </td><td>Hay cosas contra las que uno no puede hacer ya nada. Y simplemente se rinde.                                                                                                                                                                                                                 </td></tr>\n",
+              "\t<tr><td>9.834751e+17</td><td>09osuna        </td><td>Ser feliz implica aceptar limitaciones??                                                                                                                                                                                                                                                     </td></tr>\n",
+              "\t<tr><td>9.834751e+17</td><td>louder_thancat </td><td>Nada les parece... https://t.co/PGZPBF6YOF                                                                                                                                                                                                                                                   </td></tr>\n",
+              "\t<tr><td>9.834751e+17</td><td>lilyindescai   </td><td>Cuando te empiezas a acordar de las cosas que hiciste en estado de ebriedad... https://t.co/wqp5iUUB2c                                                                                                                                                                                       </td></tr>\n",
+              "\t<tr><td>9.834751e+17</td><td>perecerda      </td><td>Fulvio Martins https://t.co/Ez1s7CHRIE                                                                                                                                                                                                                                                       </td></tr>\n",
+              "</tbody>\n",
+              "</table>\n"
+            ]
+          },
+          "metadata": {
+            "tags": []
+          }
+        }
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "ikERYruAmxxO",
+        "colab_type": "text"
+      },
+      "source": [
+        "7. Usaremos gsub para que con el uso de expresiones regulares podamos quitar los links que se puedan encontrar dentro de los tweets"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "eGngfRe-p9vR",
+        "colab_type": "code",
+        "colab": {}
+      },
+      "source": [
+        "quitar_url <- function(texto) {\n",
+        "    gsub(\"\\\\<http\\\\S*\\\\>|[0-9]\", \" \", texto)\n",
+        "}"
+      ],
+      "execution_count": 10,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "gSyt4ZDgxn8K",
+        "colab_type": "text"
+      },
+      "source": [
+        "##Pasando a matriz dispersa"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "W3jChatdwioA",
+        "colab_type": "text"
+      },
+      "source": [
+        "8. Convertiremos nuestros datos en una matriz dispersa, por lo que tendremos que segmentar cada palabra en columnas, hacer cuenta de la aparición de cada palabra y se le dara un formato ancho"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "099XkdQ7qDxZ",
+        "colab_type": "code",
+        "colab": {
+          "base_uri": "https://localhost:8080/",
+          "height": 1000
+        },
+        "outputId": "3c0c8e1c-9a84-4c46-f016-678bf4ed6d00"
+      },
+      "source": [
+        "tweets_df %>%\n",
+        "  unnest_tokens(input = \"text\", output = \"palabra\") %>%\n",
+        "  count(screen_name, status_id, palabra) %>%\n",
+        "  spread(key = palabra, value = n)"
+      ],
+      "execution_count": 14,
+      "outputs": [
+        {
+          "output_type": "display_data",
+          "data": {
+            "text/plain": [
+              "     screen_name     status_id    _mx _paolimeow _siqure 00 03 04npkn59na\n",
+              "1    __dianapatricia 9.834750e+17 NA  NA         NA      NA NA NA        \n",
+              "2    _vichoo1        9.834750e+17 NA  NA         NA      NA NA NA        \n",
+              "3    _victoriacetina 9.834751e+17 NA  NA         NA      NA NA NA        \n",
+              "4    09osuna         9.834751e+17 NA  NA         NA      NA NA NA        \n",
+              "5    1javierespinoza 9.834750e+17 NA  NA         NA      NA NA NA        \n",
+              "6    Accountant_Job  9.834750e+17 NA  NA         NA      NA NA NA        \n",
+              "7    AcuarioJac      9.834750e+17 NA  NA         NA      NA NA NA        \n",
+              "8    agenciasanluis  9.834750e+17 NA  NA         NA      NA NA NA        \n",
+              "9    Alexvaldesp     9.834750e+17 NA  NA         NA      NA NA NA        \n",
+              "10   Allisonband     9.834750e+17 NA  NA         NA      NA NA NA        \n",
+              "11   amediumplace    9.834750e+17 NA  NA         NA      NA NA NA        \n",
+              "12   amediumplace    9.834750e+17 NA  NA         NA      NA NA NA        \n",
+              "13   AnahuacOaxaca   9.834750e+17 NA  NA         NA      NA NA NA        \n",
+              "14   AndreaOchoaM    9.834750e+17 NA  NA         NA      NA NA NA        \n",
+              "15   Angel_BM        9.834750e+17 NA  NA         NA      NA NA NA        \n",
+              "16   angelasaju      9.834750e+17 NA  NA         NA      NA NA NA        \n",
+              "17   angelmarielle_  9.834751e+17 NA  NA         NA      NA NA NA        \n",
+              "18   AntequeraDiario 9.834750e+17 NA  NA         NA      NA NA NA        \n",
+              "19   Arresnita       9.834750e+17 NA  NA         NA      NA NA NA        \n",
+              "20   azamar1         9.834750e+17 NA  NA         NA      NA NA NA        \n",
+              "21   Banking_job     9.834750e+17 NA  NA         NA      NA NA NA        \n",
+              "22   baxtersa23      9.834750e+17 NA  NA         NA      NA NA NA        \n",
+              "23   BecSantus       9.834751e+17 NA  NA         NA      NA NA NA        \n",
+              "24   BGoldenVIP      9.834750e+17 NA  NA         NA      NA NA NA        \n",
+              "25   Bietan_jarrai59 9.834750e+17 NA  NA         NA      NA NA NA        \n",
+              "26   BrendaBCG12     9.834750e+17 NA  NA         NA      NA NA NA        \n",
+              "27   BrendaBCG12     9.834751e+17 NA  NA         NA      NA NA NA        \n",
+              "28   casaverde4piso  9.834750e+17 NA  NA         NA      NA NA NA        \n",
+              "29   cata5581299141  9.834751e+17 NA  NA         NA      NA NA NA        \n",
+              "30   CEASMx          9.834750e+17 NA  NA         NA      NA NA NA        \n",
+              "⋮    ⋮               ⋮            ⋮   ⋮          ⋮       ⋮  ⋮  ⋮         \n",
+              "1319 UNAM_MX         9.831324e+17 NA  NA         NA      NA NA NA        \n",
+              "1320 UNAM_MX         9.831475e+17 NA  NA         NA      NA NA NA        \n",
+              "1321 UNAM_MX         9.831626e+17 NA  NA         NA      NA NA NA        \n",
+              "1322 UNAM_MX         9.831777e+17 NA  NA         NA      NA NA NA        \n",
+              "1323 UNAM_MX         9.831852e+17 NA  NA         NA      NA NA NA        \n",
+              "1324 UNAM_MX         9.833138e+17 NA  NA         NA      NA NA NA        \n",
+              "1325 UNAM_MX         9.833287e+17 NA  NA         NA      NA NA NA        \n",
+              "1326 UNAM_MX         9.833363e+17 NA  NA         NA      NA NA NA        \n",
+              "1327 UNAM_MX         9.833440e+17 NA  NA         NA      NA NA NA        \n",
+              "1328 UNAM_MX         9.833513e+17 NA  NA         NA      NA NA NA        \n",
+              "1329 UNAM_MX         9.833590e+17 NA  NA         NA      NA NA NA        \n",
+              "1330 UNAM_MX         9.833665e+17 NA  NA         NA      NA NA NA        \n",
+              "1331 UNAM_MX         9.833740e+17 NA  NA         NA      NA NA NA        \n",
+              "1332 UNAM_MX         9.833894e+17 NA  NA         NA      NA NA NA        \n",
+              "1333 UNAM_MX         9.834042e+17 NA  NA         NA      NA NA NA        \n",
+              "1334 UNAM_MX         9.834118e+17 NA  NA         NA      NA NA NA        \n",
+              "1335 UNAM_MX         9.834196e+17 NA  NA         NA      NA NA NA        \n",
+              "1336 UNAM_MX         9.834269e+17 NA  NA         NA      NA NA NA        \n",
+              "1337 UNAM_MX         9.834345e+17 NA  NA         NA      NA NA NA        \n",
+              "1338 UNAM_MX         9.834495e+17 NA  NA         NA      NA NA NA        \n",
+              "1339 UNAM_MX         9.834571e+17 NA  NA         NA      NA NA NA        \n",
+              "1340 UNAM_MX         9.834647e+17 NA  NA         NA      NA NA NA        \n",
+              "1341 UNAM_MX         9.834722e+17 NA  NA         NA      NA NA NA        \n",
+              "1342 Unkilodeayuda   9.834750e+17 NA  NA         NA      NA NA NA        \n",
+              "1343 volutainfo      9.834750e+17 NA  NA         NA      NA NA NA        \n",
+              "1344 yaboycarnz      9.834750e+17 NA  NA         NA      NA NA NA        \n",
+              "1345 YarelCS         9.834750e+17 NA  NA         NA      NA NA NA        \n",
+              "1346 YazminSosaF     9.834750e+17 NA  NA         NA      NA NA NA        \n",
+              "1347 Yeolanatomy     9.834750e+17 NA  NA         NA      NA NA NA        \n",
+              "1348 zunigae903      9.834750e+17 NA  NA         NA      NA NA NA        \n",
+              "     04p2fdlagz 08ij203qie ⋯ ztzpuo0zmr zu1rqateru zuuuuuukiiiiiitiiiiii\n",
+              "1    NA         NA         ⋯ NA         NA         NA                   \n",
+              "2    NA         NA         ⋯ NA         NA         NA                   \n",
+              "3    NA         NA         ⋯ NA         NA         NA                   \n",
+              "4    NA         NA         ⋯ NA         NA         NA                   \n",
+              "5    NA         NA         ⋯ NA         NA         NA                   \n",
+              "6    NA         NA         ⋯ NA         NA         NA                   \n",
+              "7    NA         NA         ⋯ NA         NA         NA                   \n",
+              "8    NA         NA         ⋯ NA         NA         NA                   \n",
+              "9    NA         NA         ⋯ NA         NA         NA                   \n",
+              "10   NA         NA         ⋯ NA         NA         NA                   \n",
+              "11   NA         NA         ⋯ NA         NA         NA                   \n",
+              "12   NA         NA         ⋯ NA         NA         NA                   \n",
+              "13   NA         NA         ⋯ NA         NA         NA                   \n",
+              "14   NA         NA         ⋯ NA         NA         NA                   \n",
+              "15   NA         NA         ⋯ NA         NA         NA                   \n",
+              "16   NA         NA         ⋯ NA         NA         NA                   \n",
+              "17   NA         NA         ⋯ NA         NA         NA                   \n",
+              "18   NA         NA         ⋯ NA         NA         NA                   \n",
+              "19   NA         NA         ⋯ NA         NA         NA                   \n",
+              "20   NA         NA         ⋯ NA         NA         NA                   \n",
+              "21   NA         NA         ⋯ NA         NA         NA                   \n",
+              "22   NA         NA         ⋯ NA         NA         NA                   \n",
+              "23   NA         NA         ⋯ NA         NA         NA                   \n",
+              "24   NA         NA         ⋯ NA         NA         NA                   \n",
+              "25   NA         NA         ⋯ NA         NA         NA                   \n",
+              "26   NA         NA         ⋯ NA         NA         NA                   \n",
+              "27   NA         NA         ⋯ NA         NA         NA                   \n",
+              "28   NA         NA         ⋯ NA         NA         NA                   \n",
+              "29   NA         NA         ⋯ NA         NA         NA                   \n",
+              "30   NA         NA         ⋯ NA         NA         NA                   \n",
+              "⋮    ⋮          ⋮          ⋱ ⋮          ⋮          ⋮                    \n",
+              "1319 NA         NA         ⋯ NA         NA         NA                   \n",
+              "1320 NA         NA         ⋯ NA         NA         NA                   \n",
+              "1321 NA         NA         ⋯ NA         NA         NA                   \n",
+              "1322 NA         NA         ⋯ NA         NA         NA                   \n",
+              "1323 NA         NA         ⋯ NA         NA         NA                   \n",
+              "1324 NA         NA         ⋯ NA         NA         NA                   \n",
+              "1325 NA         NA         ⋯ NA         NA         NA                   \n",
+              "1326 NA         NA         ⋯ NA         NA         NA                   \n",
+              "1327 NA         NA         ⋯ NA         NA         NA                   \n",
+              "1328 NA         NA         ⋯ NA         NA         NA                   \n",
+              "1329 NA         NA         ⋯ NA         NA         NA                   \n",
+              "1330 NA         NA         ⋯ NA         NA         NA                   \n",
+              "1331 NA         NA         ⋯ NA         NA         NA                   \n",
+              "1332 NA         NA         ⋯ NA         NA         NA                   \n",
+              "1333 NA         NA         ⋯ NA         NA         NA                   \n",
+              "1334 NA         NA         ⋯ NA         NA         NA                   \n",
+              "1335 NA         NA         ⋯ NA         NA         NA                   \n",
+              "1336 NA         NA         ⋯ NA         NA         NA                   \n",
+              "1337 NA         NA         ⋯ NA         NA         NA                   \n",
+              "1338 NA         NA         ⋯ NA         NA         NA                   \n",
+              "1339 NA         NA         ⋯ NA         NA         NA                   \n",
+              "1340 NA         NA         ⋯ NA         NA         NA                   \n",
+              "1341 NA         NA         ⋯ NA         NA         NA                   \n",
+              "1342 NA         NA         ⋯ NA         NA         NA                   \n",
+              "1343 NA         NA         ⋯ NA         NA         NA                   \n",
+              "1344 NA         NA         ⋯ NA         NA         NA                   \n",
+              "1345 NA         NA         ⋯ NA         NA         NA                   \n",
+              "1346 NA         NA         ⋯ NA         NA         NA                   \n",
+              "1347 NA         NA         ⋯ NA         NA         NA                   \n",
+              "1348 NA         NA         ⋯ NA         NA         NA                   \n",
+              "     zw6fivgsy9 zwgzff7duv zwhlxfsvfb zwn5nrt3ac zxa2oqdte9 zyvcectcsp\n",
+              "1    NA         NA         NA         NA         NA         NA        \n",
+              "2    NA         NA         NA         NA         NA         NA        \n",
+              "3    NA         NA         NA         NA         NA         NA        \n",
+              "4    NA         NA         NA         NA         NA         NA        \n",
+              "5    NA         NA         NA         NA         NA         NA        \n",
+              "6    NA         NA         NA         NA         NA         NA        \n",
+              "7    NA         NA         NA         NA         NA         NA        \n",
+              "8    NA         NA         NA         NA         NA         NA        \n",
+              "9    NA         NA         NA         NA         NA         NA        \n",
+              "10   NA         NA         NA         NA         NA         NA        \n",
+              "11   NA         NA         NA         NA         NA         NA        \n",
+              "12   NA         NA         NA         NA         NA         NA        \n",
+              "13   NA         NA         NA         NA         NA         NA        \n",
+              "14   NA         NA         NA         NA         NA         NA        \n",
+              "15   NA         NA         NA         NA         NA         NA        \n",
+              "16   NA         NA         NA         NA         NA         NA        \n",
+              "17   NA         NA         NA         NA         NA         NA        \n",
+              "18   NA         NA         NA         NA         NA         NA        \n",
+              "19   NA         NA         NA         NA         NA         NA        \n",
+              "20   NA         NA         NA         NA         NA         NA        \n",
+              "21   NA         NA         NA         NA         NA         NA        \n",
+              "22   NA         NA         NA         NA         NA         NA        \n",
+              "23   NA         NA         NA         NA         NA         NA        \n",
+              "24   NA         NA         NA         NA         NA         NA        \n",
+              "25   NA         NA         NA         NA         NA         NA        \n",
+              "26   NA         NA         NA         NA         NA         NA        \n",
+              "27   NA         NA         NA         NA         NA         NA        \n",
+              "28   NA         NA         NA         NA         NA         NA        \n",
+              "29   NA         NA         NA         NA         NA         NA        \n",
+              "30   NA         NA         NA         NA         NA         NA        \n",
+              "⋮    ⋮          ⋮          ⋮          ⋮          ⋮          ⋮         \n",
+              "1319 NA         NA         NA         NA         NA         NA        \n",
+              "1320 NA         NA         NA         NA         NA         NA        \n",
+              "1321 NA         NA         NA         NA         NA         NA        \n",
+              "1322 NA         NA         NA         NA         NA         NA        \n",
+              "1323 NA         NA         NA         NA         NA         NA        \n",
+              "1324 NA         NA         NA         NA         NA         NA        \n",
+              "1325 NA         NA         NA         NA         NA         NA        \n",
+              "1326 NA         NA         NA         NA         NA         NA        \n",
+              "1327 NA         NA         NA         NA         NA         NA        \n",
+              "1328 NA         NA         NA         NA         NA         NA        \n",
+              "1329 NA         NA         NA         NA         NA         NA        \n",
+              "1330 NA         NA         NA         NA         NA         NA        \n",
+              "1331 NA         NA         NA         NA         NA         NA        \n",
+              "1332 NA         NA         NA         NA         NA         NA        \n",
+              "1333 NA         NA         NA         NA         NA         NA        \n",
+              "1334 NA         NA         NA         NA         NA         NA        \n",
+              "1335 NA         NA         NA         NA         NA         NA        \n",
+              "1336 NA         NA         NA         NA         NA         NA        \n",
+              "1337 NA         NA         NA         NA         NA         NA        \n",
+              "1338 NA         NA         NA         NA         NA         NA        \n",
+              "1339 NA         NA         NA         NA         NA         NA        \n",
+              "1340 NA         NA         NA         NA         NA         NA        \n",
+              "1341 NA         NA         NA         NA         NA         NA        \n",
+              "1342 NA         NA         NA         NA         NA         NA        \n",
+              "1343 NA         NA         NA         NA         NA         NA        \n",
+              "1344 NA         NA         NA         NA         NA         NA        \n",
+              "1345 NA         NA         NA         NA         NA         NA        \n",
+              "1346 NA         NA         NA         NA         NA         NA        \n",
+              "1347 NA         NA         NA         NA         NA         NA        \n",
+              "1348 NA         NA         NA         NA         NA         NA        \n",
+              "     zzapvyhe2m\n",
+              "1    NA        \n",
+              "2    NA        \n",
+              "3    NA        \n",
+              "4    NA        \n",
+              "5    NA        \n",
+              "6    NA        \n",
+              "7    NA        \n",
+              "8    NA        \n",
+              "9    NA        \n",
+              "10   NA        \n",
+              "11   NA        \n",
+              "12   NA        \n",
+              "13   NA        \n",
+              "14   NA        \n",
+              "15   NA        \n",
+              "16   NA        \n",
+              "17   NA        \n",
+              "18   NA        \n",
+              "19   NA        \n",
+              "20   NA        \n",
+              "21   NA        \n",
+              "22   NA        \n",
+              "23   NA        \n",
+              "24   NA        \n",
+              "25   NA        \n",
+              "26   NA        \n",
+              "27   NA        \n",
+              "28   NA        \n",
+              "29   NA        \n",
+              "30   NA        \n",
+              "⋮    ⋮         \n",
+              "1319 NA        \n",
+              "1320 NA        \n",
+              "1321 NA        \n",
+              "1322 NA        \n",
+              "1323 NA        \n",
+              "1324 NA        \n",
+              "1325 NA        \n",
+              "1326 NA        \n",
+              "1327 NA        \n",
+              "1328 NA        \n",
+              "1329 NA        \n",
+              "1330 NA        \n",
+              "1331 NA        \n",
+              "1332 NA        \n",
+              "1333 NA        \n",
+              "1334 NA        \n",
+              "1335 NA        \n",
+              "1336 NA        \n",
+              "1337 NA        \n",
+              "1338 NA        \n",
+              "1339 NA        \n",
+              "1340 NA        \n",
+              "1341 NA        \n",
+              "1342 NA        \n",
+              "1343 NA        \n",
+              "1344 NA        \n",
+              "1345 NA        \n",
+              "1346 NA        \n",
+              "1347 NA        \n",
+              "1348 NA        "
+            ],
+            "text/latex": "A data.frame: 1348 × 8571\n\\begin{tabular}{lllllllllllllllllllll}\n screen\\_name & status\\_id & \\_mx & \\_paolimeow & \\_siqure & 00 & 03 & 04npkn59na & 04p2fdlagz & 08ij203qie & ⋯ & ztzpuo0zmr & zu1rqateru & zuuuuuukiiiiiitiiiiii & zw6fivgsy9 & zwgzff7duv & zwhlxfsvfb & zwn5nrt3ac & zxa2oqdte9 & zyvcectcsp & zzapvyhe2m\\\\\n <chr> & <dbl> & <int> & <int> & <int> & <int> & <int> & <int> & <int> & <int> & ⋯ & <int> & <int> & <int> & <int> & <int> & <int> & <int> & <int> & <int> & <int>\\\\\n\\hline\n\t \\_\\_dianapatricia & 9.834750e+17 & NA & NA & NA & NA & NA & NA & NA & NA & ⋯ & NA & NA & NA & NA & NA & NA & NA & NA & NA & NA\\\\\n\t \\_vichoo1        & 9.834750e+17 & NA & NA & NA & NA & NA & NA & NA & NA & ⋯ & NA & NA & NA & NA & NA & NA & NA & NA & NA & NA\\\\\n\t \\_victoriacetina & 9.834751e+17 & NA & NA & NA & NA & NA & NA & NA & NA & ⋯ & NA & NA & NA & NA & NA & NA & NA & NA & NA & NA\\\\\n\t 09osuna         & 9.834751e+17 & NA & NA & NA & NA & NA & NA & NA & NA & ⋯ & NA & NA & NA & NA & NA & NA & NA & NA & NA & NA\\\\\n\t 1javierespinoza & 9.834750e+17 & NA & NA & NA & NA & NA & NA & NA & NA & ⋯ & NA & NA & NA & NA & NA & NA & NA & NA & NA & NA\\\\\n\t Accountant\\_Job  & 9.834750e+17 & NA & NA & NA & NA & NA & NA & NA & NA & ⋯ & NA & NA & NA & NA & NA & NA & NA & NA & NA & NA\\\\\n\t AcuarioJac      & 9.834750e+17 & NA & NA & NA & NA & NA & NA & NA & NA & ⋯ & NA & NA & NA & NA & NA & NA & NA & NA & NA & NA\\\\\n\t agenciasanluis  & 9.834750e+17 & NA & NA & NA & NA & NA & NA & NA & NA & ⋯ & NA & NA & NA & NA & NA & NA & NA & NA & NA & NA\\\\\n\t Alexvaldesp     & 9.834750e+17 & NA & NA & NA & NA & NA & NA & NA & NA & ⋯ & NA & NA & NA & NA & NA & NA & NA & NA & NA & NA\\\\\n\t Allisonband     & 9.834750e+17 & NA & NA & NA & NA & NA & NA & NA & NA & ⋯ & NA & NA & NA & NA & NA & NA & NA & NA & NA & NA\\\\\n\t amediumplace    & 9.834750e+17 & NA & NA & NA & NA & NA & NA & NA & NA & ⋯ & NA & NA & NA & NA & NA & NA & NA & NA & NA & NA\\\\\n\t amediumplace    & 9.834750e+17 & NA & NA & NA & NA & NA & NA & NA & NA & ⋯ & NA & NA & NA & NA & NA & NA & NA & NA & NA & NA\\\\\n\t AnahuacOaxaca   & 9.834750e+17 & NA & NA & NA & NA & NA & NA & NA & NA & ⋯ & NA & NA & NA & NA & NA & NA & NA & NA & NA & NA\\\\\n\t AndreaOchoaM    & 9.834750e+17 & NA & NA & NA & NA & NA & NA & NA & NA & ⋯ & NA & NA & NA & NA & NA & NA & NA & NA & NA & NA\\\\\n\t Angel\\_BM        & 9.834750e+17 & NA & NA & NA & NA & NA & NA & NA & NA & ⋯ & NA & NA & NA & NA & NA & NA & NA & NA & NA & NA\\\\\n\t angelasaju      & 9.834750e+17 & NA & NA & NA & NA & NA & NA & NA & NA & ⋯ & NA & NA & NA & NA & NA & NA & NA & NA & NA & NA\\\\\n\t angelmarielle\\_  & 9.834751e+17 & NA & NA & NA & NA & NA & NA & NA & NA & ⋯ & NA & NA & NA & NA & NA & NA & NA & NA & NA & NA\\\\\n\t AntequeraDiario & 9.834750e+17 & NA & NA & NA & NA & NA & NA & NA & NA & ⋯ & NA & NA & NA & NA & NA & NA & NA & NA & NA & NA\\\\\n\t Arresnita       & 9.834750e+17 & NA & NA & NA & NA & NA & NA & NA & NA & ⋯ & NA & NA & NA & NA & NA & NA & NA & NA & NA & NA\\\\\n\t azamar1         & 9.834750e+17 & NA & NA & NA & NA & NA & NA & NA & NA & ⋯ & NA & NA & NA & NA & NA & NA & NA & NA & NA & NA\\\\\n\t Banking\\_job     & 9.834750e+17 & NA & NA & NA & NA & NA & NA & NA & NA & ⋯ & NA & NA & NA & NA & NA & NA & NA & NA & NA & NA\\\\\n\t baxtersa23      & 9.834750e+17 & NA & NA & NA & NA & NA & NA & NA & NA & ⋯ & NA & NA & NA & NA & NA & NA & NA & NA & NA & NA\\\\\n\t BecSantus       & 9.834751e+17 & NA & NA & NA & NA & NA & NA & NA & NA & ⋯ & NA & NA & NA & NA & NA & NA & NA & NA & NA & NA\\\\\n\t BGoldenVIP      & 9.834750e+17 & NA & NA & NA & NA & NA & NA & NA & NA & ⋯ & NA & NA & NA & NA & NA & NA & NA & NA & NA & NA\\\\\n\t Bietan\\_jarrai59 & 9.834750e+17 & NA & NA & NA & NA & NA & NA & NA & NA & ⋯ & NA & NA & NA & NA & NA & NA & NA & NA & NA & NA\\\\\n\t BrendaBCG12     & 9.834750e+17 & NA & NA & NA & NA & NA & NA & NA & NA & ⋯ & NA & NA & NA & NA & NA & NA & NA & NA & NA & NA\\\\\n\t BrendaBCG12     & 9.834751e+17 & NA & NA & NA & NA & NA & NA & NA & NA & ⋯ & NA & NA & NA & NA & NA & NA & NA & NA & NA & NA\\\\\n\t casaverde4piso  & 9.834750e+17 & NA & NA & NA & NA & NA & NA & NA & NA & ⋯ & NA & NA & NA & NA & NA & NA & NA & NA & NA & NA\\\\\n\t cata5581299141  & 9.834751e+17 & NA & NA & NA & NA & NA & NA & NA & NA & ⋯ & NA & NA & NA & NA & NA & NA & NA & NA & NA & NA\\\\\n\t CEASMx          & 9.834750e+17 & NA & NA & NA & NA & NA & NA & NA & NA & ⋯ & NA & NA & NA & NA & NA & NA & NA & NA & NA & NA\\\\\n\t ⋮ & ⋮ & ⋮ & ⋮ & ⋮ & ⋮ & ⋮ & ⋮ & ⋮ & ⋮ & ⋱ & ⋮ & ⋮ & ⋮ & ⋮ & ⋮ & ⋮ & ⋮ & ⋮ & ⋮ & ⋮\\\\\n\t UNAM\\_MX       & 9.831324e+17 & NA & NA & NA & NA & NA & NA & NA & NA & ⋯ & NA & NA & NA & NA & NA & NA & NA & NA & NA & NA\\\\\n\t UNAM\\_MX       & 9.831475e+17 & NA & NA & NA & NA & NA & NA & NA & NA & ⋯ & NA & NA & NA & NA & NA & NA & NA & NA & NA & NA\\\\\n\t UNAM\\_MX       & 9.831626e+17 & NA & NA & NA & NA & NA & NA & NA & NA & ⋯ & NA & NA & NA & NA & NA & NA & NA & NA & NA & NA\\\\\n\t UNAM\\_MX       & 9.831777e+17 & NA & NA & NA & NA & NA & NA & NA & NA & ⋯ & NA & NA & NA & NA & NA & NA & NA & NA & NA & NA\\\\\n\t UNAM\\_MX       & 9.831852e+17 & NA & NA & NA & NA & NA & NA & NA & NA & ⋯ & NA & NA & NA & NA & NA & NA & NA & NA & NA & NA\\\\\n\t UNAM\\_MX       & 9.833138e+17 & NA & NA & NA & NA & NA & NA & NA & NA & ⋯ & NA & NA & NA & NA & NA & NA & NA & NA & NA & NA\\\\\n\t UNAM\\_MX       & 9.833287e+17 & NA & NA & NA & NA & NA & NA & NA & NA & ⋯ & NA & NA & NA & NA & NA & NA & NA & NA & NA & NA\\\\\n\t UNAM\\_MX       & 9.833363e+17 & NA & NA & NA & NA & NA & NA & NA & NA & ⋯ & NA & NA & NA & NA & NA & NA & NA & NA & NA & NA\\\\\n\t UNAM\\_MX       & 9.833440e+17 & NA & NA & NA & NA & NA & NA & NA & NA & ⋯ & NA & NA & NA & NA & NA & NA & NA & NA & NA & NA\\\\\n\t UNAM\\_MX       & 9.833513e+17 & NA & NA & NA & NA & NA & NA & NA & NA & ⋯ & NA & NA & NA & NA & NA & NA & NA & NA & NA & NA\\\\\n\t UNAM\\_MX       & 9.833590e+17 & NA & NA & NA & NA & NA & NA & NA & NA & ⋯ & NA & NA & NA & NA & NA & NA & NA & NA & NA & NA\\\\\n\t UNAM\\_MX       & 9.833665e+17 & NA & NA & NA & NA & NA & NA & NA & NA & ⋯ & NA & NA & NA & NA & NA & NA & NA & NA & NA & NA\\\\\n\t UNAM\\_MX       & 9.833740e+17 & NA & NA & NA & NA & NA & NA & NA & NA & ⋯ & NA & NA & NA & NA & NA & NA & NA & NA & NA & NA\\\\\n\t UNAM\\_MX       & 9.833894e+17 & NA & NA & NA & NA & NA & NA & NA & NA & ⋯ & NA & NA & NA & NA & NA & NA & NA & NA & NA & NA\\\\\n\t UNAM\\_MX       & 9.834042e+17 & NA & NA & NA & NA & NA & NA & NA & NA & ⋯ & NA & NA & NA & NA & NA & NA & NA & NA & NA & NA\\\\\n\t UNAM\\_MX       & 9.834118e+17 & NA & NA & NA & NA & NA & NA & NA & NA & ⋯ & NA & NA & NA & NA & NA & NA & NA & NA & NA & NA\\\\\n\t UNAM\\_MX       & 9.834196e+17 & NA & NA & NA & NA & NA & NA & NA & NA & ⋯ & NA & NA & NA & NA & NA & NA & NA & NA & NA & NA\\\\\n\t UNAM\\_MX       & 9.834269e+17 & NA & NA & NA & NA & NA & NA & NA & NA & ⋯ & NA & NA & NA & NA & NA & NA & NA & NA & NA & NA\\\\\n\t UNAM\\_MX       & 9.834345e+17 & NA & NA & NA & NA & NA & NA & NA & NA & ⋯ & NA & NA & NA & NA & NA & NA & NA & NA & NA & NA\\\\\n\t UNAM\\_MX       & 9.834495e+17 & NA & NA & NA & NA & NA & NA & NA & NA & ⋯ & NA & NA & NA & NA & NA & NA & NA & NA & NA & NA\\\\\n\t UNAM\\_MX       & 9.834571e+17 & NA & NA & NA & NA & NA & NA & NA & NA & ⋯ & NA & NA & NA & NA & NA & NA & NA & NA & NA & NA\\\\\n\t UNAM\\_MX       & 9.834647e+17 & NA & NA & NA & NA & NA & NA & NA & NA & ⋯ & NA & NA & NA & NA & NA & NA & NA & NA & NA & NA\\\\\n\t UNAM\\_MX       & 9.834722e+17 & NA & NA & NA & NA & NA & NA & NA & NA & ⋯ & NA & NA & NA & NA & NA & NA & NA & NA & NA & NA\\\\\n\t Unkilodeayuda & 9.834750e+17 & NA & NA & NA & NA & NA & NA & NA & NA & ⋯ & NA & NA & NA & NA & NA & NA & NA & NA & NA & NA\\\\\n\t volutainfo    & 9.834750e+17 & NA & NA & NA & NA & NA & NA & NA & NA & ⋯ & NA & NA & NA & NA & NA & NA & NA & NA & NA & NA\\\\\n\t yaboycarnz    & 9.834750e+17 & NA & NA & NA & NA & NA & NA & NA & NA & ⋯ & NA & NA & NA & NA & NA & NA & NA & NA & NA & NA\\\\\n\t YarelCS       & 9.834750e+17 & NA & NA & NA & NA & NA & NA & NA & NA & ⋯ & NA & NA & NA & NA & NA & NA & NA & NA & NA & NA\\\\\n\t YazminSosaF   & 9.834750e+17 & NA & NA & NA & NA & NA & NA & NA & NA & ⋯ & NA & NA & NA & NA & NA & NA & NA & NA & NA & NA\\\\\n\t Yeolanatomy   & 9.834750e+17 & NA & NA & NA & NA & NA & NA & NA & NA & ⋯ & NA & NA & NA & NA & NA & NA & NA & NA & NA & NA\\\\\n\t zunigae903    & 9.834750e+17 & NA & NA & NA & NA & NA & NA & NA & NA & ⋯ & NA & NA & NA & NA & NA & NA & NA & NA & NA & NA\\\\\n\\end{tabular}\n",
+            "text/markdown": "\nA data.frame: 1348 × 8571\n\n| screen_name &lt;chr&gt; | status_id &lt;dbl&gt; | _mx &lt;int&gt; | _paolimeow &lt;int&gt; | _siqure &lt;int&gt; | 00 &lt;int&gt; | 03 &lt;int&gt; | 04npkn59na &lt;int&gt; | 04p2fdlagz &lt;int&gt; | 08ij203qie &lt;int&gt; | ⋯ ⋯ | ztzpuo0zmr &lt;int&gt; | zu1rqateru &lt;int&gt; | zuuuuuukiiiiiitiiiiii &lt;int&gt; | zw6fivgsy9 &lt;int&gt; | zwgzff7duv &lt;int&gt; | zwhlxfsvfb &lt;int&gt; | zwn5nrt3ac &lt;int&gt; | zxa2oqdte9 &lt;int&gt; | zyvcectcsp &lt;int&gt; | zzapvyhe2m &lt;int&gt; |\n|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|\n| __dianapatricia | 9.834750e+17 | NA | NA | NA | NA | NA | NA | NA | NA | ⋯ | NA | NA | NA | NA | NA | NA | NA | NA | NA | NA |\n| _vichoo1        | 9.834750e+17 | NA | NA | NA | NA | NA | NA | NA | NA | ⋯ | NA | NA | NA | NA | NA | NA | NA | NA | NA | NA |\n| _victoriacetina | 9.834751e+17 | NA | NA | NA | NA | NA | NA | NA | NA | ⋯ | NA | NA | NA | NA | NA | NA | NA | NA | NA | NA |\n| 09osuna         | 9.834751e+17 | NA | NA | NA | NA | NA | NA | NA | NA | ⋯ | NA | NA | NA | NA | NA | NA | NA | NA | NA | NA |\n| 1javierespinoza | 9.834750e+17 | NA | NA | NA | NA | NA | NA | NA | NA | ⋯ | NA | NA | NA | NA | NA | NA | NA | NA | NA | NA |\n| Accountant_Job  | 9.834750e+17 | NA | NA | NA | NA | NA | NA | NA | NA | ⋯ | NA | NA | NA | NA | NA | NA | NA | NA | NA | NA |\n| AcuarioJac      | 9.834750e+17 | NA | NA | NA | NA | NA | NA | NA | NA | ⋯ | NA | NA | NA | NA | NA | NA | NA | NA | NA | NA |\n| agenciasanluis  | 9.834750e+17 | NA | NA | NA | NA | NA | NA | NA | NA | ⋯ | NA | NA | NA | NA | NA | NA | NA | NA | NA | NA |\n| Alexvaldesp     | 9.834750e+17 | NA | NA | NA | NA | NA | NA | NA | NA | ⋯ | NA | NA | NA | NA | NA | NA | NA | NA | NA | NA |\n| Allisonband     | 9.834750e+17 | NA | NA | NA | NA | NA | NA | NA | NA | ⋯ | NA | NA | NA | NA | NA | NA | NA | NA | NA | NA |\n| amediumplace    | 9.834750e+17 | NA | NA | NA | NA | NA | NA | NA | NA | ⋯ | NA | NA | NA | NA | NA | NA | NA | NA | NA | NA |\n| amediumplace    | 9.834750e+17 | NA | NA | NA | NA | NA | NA | NA | NA | ⋯ | NA | NA | NA | NA | NA | NA | NA | NA | NA | NA |\n| AnahuacOaxaca   | 9.834750e+17 | NA | NA | NA | NA | NA | NA | NA | NA | ⋯ | NA | NA | NA | NA | NA | NA | NA | NA | NA | NA |\n| AndreaOchoaM    | 9.834750e+17 | NA | NA | NA | NA | NA | NA | NA | NA | ⋯ | NA | NA | NA | NA | NA | NA | NA | NA | NA | NA |\n| Angel_BM        | 9.834750e+17 | NA | NA | NA | NA | NA | NA | NA | NA | ⋯ | NA | NA | NA | NA | NA | NA | NA | NA | NA | NA |\n| angelasaju      | 9.834750e+17 | NA | NA | NA | NA | NA | NA | NA | NA | ⋯ | NA | NA | NA | NA | NA | NA | NA | NA | NA | NA |\n| angelmarielle_  | 9.834751e+17 | NA | NA | NA | NA | NA | NA | NA | NA | ⋯ | NA | NA | NA | NA | NA | NA | NA | NA | NA | NA |\n| AntequeraDiario | 9.834750e+17 | NA | NA | NA | NA | NA | NA | NA | NA | ⋯ | NA | NA | NA | NA | NA | NA | NA | NA | NA | NA |\n| Arresnita       | 9.834750e+17 | NA | NA | NA | NA | NA | NA | NA | NA | ⋯ | NA | NA | NA | NA | NA | NA | NA | NA | NA | NA |\n| azamar1         | 9.834750e+17 | NA | NA | NA | NA | NA | NA | NA | NA | ⋯ | NA | NA | NA | NA | NA | NA | NA | NA | NA | NA |\n| Banking_job     | 9.834750e+17 | NA | NA | NA | NA | NA | NA | NA | NA | ⋯ | NA | NA | NA | NA | NA | NA | NA | NA | NA | NA |\n| baxtersa23      | 9.834750e+17 | NA | NA | NA | NA | NA | NA | NA | NA | ⋯ | NA | NA | NA | NA | NA | NA | NA | NA | NA | NA |\n| BecSantus       | 9.834751e+17 | NA | NA | NA | NA | NA | NA | NA | NA | ⋯ | NA | NA | NA | NA | NA | NA | NA | NA | NA | NA |\n| BGoldenVIP      | 9.834750e+17 | NA | NA | NA | NA | NA | NA | NA | NA | ⋯ | NA | NA | NA | NA | NA | NA | NA | NA | NA | NA |\n| Bietan_jarrai59 | 9.834750e+17 | NA | NA | NA | NA | NA | NA | NA | NA | ⋯ | NA | NA | NA | NA | NA | NA | NA | NA | NA | NA |\n| BrendaBCG12     | 9.834750e+17 | NA | NA | NA | NA | NA | NA | NA | NA | ⋯ | NA | NA | NA | NA | NA | NA | NA | NA | NA | NA |\n| BrendaBCG12     | 9.834751e+17 | NA | NA | NA | NA | NA | NA | NA | NA | ⋯ | NA | NA | NA | NA | NA | NA | NA | NA | NA | NA |\n| casaverde4piso  | 9.834750e+17 | NA | NA | NA | NA | NA | NA | NA | NA | ⋯ | NA | NA | NA | NA | NA | NA | NA | NA | NA | NA |\n| cata5581299141  | 9.834751e+17 | NA | NA | NA | NA | NA | NA | NA | NA | ⋯ | NA | NA | NA | NA | NA | NA | NA | NA | NA | NA |\n| CEASMx          | 9.834750e+17 | NA | NA | NA | NA | NA | NA | NA | NA | ⋯ | NA | NA | NA | NA | NA | NA | NA | NA | NA | NA |\n| ⋮ | ⋮ | ⋮ | ⋮ | ⋮ | ⋮ | ⋮ | ⋮ | ⋮ | ⋮ | ⋱ | ⋮ | ⋮ | ⋮ | ⋮ | ⋮ | ⋮ | ⋮ | ⋮ | ⋮ | ⋮ |\n| UNAM_MX       | 9.831324e+17 | NA | NA | NA | NA | NA | NA | NA | NA | ⋯ | NA | NA | NA | NA | NA | NA | NA | NA | NA | NA |\n| UNAM_MX       | 9.831475e+17 | NA | NA | NA | NA | NA | NA | NA | NA | ⋯ | NA | NA | NA | NA | NA | NA | NA | NA | NA | NA |\n| UNAM_MX       | 9.831626e+17 | NA | NA | NA | NA | NA | NA | NA | NA | ⋯ | NA | NA | NA | NA | NA | NA | NA | NA | NA | NA |\n| UNAM_MX       | 9.831777e+17 | NA | NA | NA | NA | NA | NA | NA | NA | ⋯ | NA | NA | NA | NA | NA | NA | NA | NA | NA | NA |\n| UNAM_MX       | 9.831852e+17 | NA | NA | NA | NA | NA | NA | NA | NA | ⋯ | NA | NA | NA | NA | NA | NA | NA | NA | NA | NA |\n| UNAM_MX       | 9.833138e+17 | NA | NA | NA | NA | NA | NA | NA | NA | ⋯ | NA | NA | NA | NA | NA | NA | NA | NA | NA | NA |\n| UNAM_MX       | 9.833287e+17 | NA | NA | NA | NA | NA | NA | NA | NA | ⋯ | NA | NA | NA | NA | NA | NA | NA | NA | NA | NA |\n| UNAM_MX       | 9.833363e+17 | NA | NA | NA | NA | NA | NA | NA | NA | ⋯ | NA | NA | NA | NA | NA | NA | NA | NA | NA | NA |\n| UNAM_MX       | 9.833440e+17 | NA | NA | NA | NA | NA | NA | NA | NA | ⋯ | NA | NA | NA | NA | NA | NA | NA | NA | NA | NA |\n| UNAM_MX       | 9.833513e+17 | NA | NA | NA | NA | NA | NA | NA | NA | ⋯ | NA | NA | NA | NA | NA | NA | NA | NA | NA | NA |\n| UNAM_MX       | 9.833590e+17 | NA | NA | NA | NA | NA | NA | NA | NA | ⋯ | NA | NA | NA | NA | NA | NA | NA | NA | NA | NA |\n| UNAM_MX       | 9.833665e+17 | NA | NA | NA | NA | NA | NA | NA | NA | ⋯ | NA | NA | NA | NA | NA | NA | NA | NA | NA | NA |\n| UNAM_MX       | 9.833740e+17 | NA | NA | NA | NA | NA | NA | NA | NA | ⋯ | NA | NA | NA | NA | NA | NA | NA | NA | NA | NA |\n| UNAM_MX       | 9.833894e+17 | NA | NA | NA | NA | NA | NA | NA | NA | ⋯ | NA | NA | NA | NA | NA | NA | NA | NA | NA | NA |\n| UNAM_MX       | 9.834042e+17 | NA | NA | NA | NA | NA | NA | NA | NA | ⋯ | NA | NA | NA | NA | NA | NA | NA | NA | NA | NA |\n| UNAM_MX       | 9.834118e+17 | NA | NA | NA | NA | NA | NA | NA | NA | ⋯ | NA | NA | NA | NA | NA | NA | NA | NA | NA | NA |\n| UNAM_MX       | 9.834196e+17 | NA | NA | NA | NA | NA | NA | NA | NA | ⋯ | NA | NA | NA | NA | NA | NA | NA | NA | NA | NA |\n| UNAM_MX       | 9.834269e+17 | NA | NA | NA | NA | NA | NA | NA | NA | ⋯ | NA | NA | NA | NA | NA | NA | NA | NA | NA | NA |\n| UNAM_MX       | 9.834345e+17 | NA | NA | NA | NA | NA | NA | NA | NA | ⋯ | NA | NA | NA | NA | NA | NA | NA | NA | NA | NA |\n| UNAM_MX       | 9.834495e+17 | NA | NA | NA | NA | NA | NA | NA | NA | ⋯ | NA | NA | NA | NA | NA | NA | NA | NA | NA | NA |\n| UNAM_MX       | 9.834571e+17 | NA | NA | NA | NA | NA | NA | NA | NA | ⋯ | NA | NA | NA | NA | NA | NA | NA | NA | NA | NA |\n| UNAM_MX       | 9.834647e+17 | NA | NA | NA | NA | NA | NA | NA | NA | ⋯ | NA | NA | NA | NA | NA | NA | NA | NA | NA | NA |\n| UNAM_MX       | 9.834722e+17 | NA | NA | NA | NA | NA | NA | NA | NA | ⋯ | NA | NA | NA | NA | NA | NA | NA | NA | NA | NA |\n| Unkilodeayuda | 9.834750e+17 | NA | NA | NA | NA | NA | NA | NA | NA | ⋯ | NA | NA | NA | NA | NA | NA | NA | NA | NA | NA |\n| volutainfo    | 9.834750e+17 | NA | NA | NA | NA | NA | NA | NA | NA | ⋯ | NA | NA | NA | NA | NA | NA | NA | NA | NA | NA |\n| yaboycarnz    | 9.834750e+17 | NA | NA | NA | NA | NA | NA | NA | NA | ⋯ | NA | NA | NA | NA | NA | NA | NA | NA | NA | NA |\n| YarelCS       | 9.834750e+17 | NA | NA | NA | NA | NA | NA | NA | NA | ⋯ | NA | NA | NA | NA | NA | NA | NA | NA | NA | NA |\n| YazminSosaF   | 9.834750e+17 | NA | NA | NA | NA | NA | NA | NA | NA | ⋯ | NA | NA | NA | NA | NA | NA | NA | NA | NA | NA |\n| Yeolanatomy   | 9.834750e+17 | NA | NA | NA | NA | NA | NA | NA | NA | ⋯ | NA | NA | NA | NA | NA | NA | NA | NA | NA | NA |\n| zunigae903    | 9.834750e+17 | NA | NA | NA | NA | NA | NA | NA | NA | ⋯ | NA | NA | NA | NA | NA | NA | NA | NA | NA | NA |\n\n",
+            "text/html": [
+              "<table>\n",
+              "<caption>A data.frame: 1348 × 8571</caption>\n",
+              "<thead>\n",
+              "\t<tr><th scope=col>screen_name</th><th scope=col>status_id</th><th scope=col>_mx</th><th scope=col>_paolimeow</th><th scope=col>_siqure</th><th scope=col>00</th><th scope=col>03</th><th scope=col>04npkn59na</th><th scope=col>04p2fdlagz</th><th scope=col>08ij203qie</th><th scope=col>⋯</th><th scope=col>ztzpuo0zmr</th><th scope=col>zu1rqateru</th><th scope=col>zuuuuuukiiiiiitiiiiii</th><th scope=col>zw6fivgsy9</th><th scope=col>zwgzff7duv</th><th scope=col>zwhlxfsvfb</th><th scope=col>zwn5nrt3ac</th><th scope=col>zxa2oqdte9</th><th scope=col>zyvcectcsp</th><th scope=col>zzapvyhe2m</th></tr>\n",
+              "\t<tr><th scope=col>&lt;chr&gt;</th><th scope=col>&lt;dbl&gt;</th><th scope=col>&lt;int&gt;</th><th scope=col>&lt;int&gt;</th><th scope=col>&lt;int&gt;</th><th scope=col>&lt;int&gt;</th><th scope=col>&lt;int&gt;</th><th scope=col>&lt;int&gt;</th><th scope=col>&lt;int&gt;</th><th scope=col>&lt;int&gt;</th><th scope=col>⋯</th><th scope=col>&lt;int&gt;</th><th scope=col>&lt;int&gt;</th><th scope=col>&lt;int&gt;</th><th scope=col>&lt;int&gt;</th><th scope=col>&lt;int&gt;</th><th scope=col>&lt;int&gt;</th><th scope=col>&lt;int&gt;</th><th scope=col>&lt;int&gt;</th><th scope=col>&lt;int&gt;</th><th scope=col>&lt;int&gt;</th></tr>\n",
+              "</thead>\n",
+              "<tbody>\n",
+              "\t<tr><td>__dianapatricia</td><td>9.834750e+17</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>⋯</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td></tr>\n",
+              "\t<tr><td>_vichoo1       </td><td>9.834750e+17</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>⋯</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td></tr>\n",
+              "\t<tr><td>_victoriacetina</td><td>9.834751e+17</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>⋯</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td></tr>\n",
+              "\t<tr><td>09osuna        </td><td>9.834751e+17</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>⋯</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td></tr>\n",
+              "\t<tr><td>1javierespinoza</td><td>9.834750e+17</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>⋯</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td></tr>\n",
+              "\t<tr><td>Accountant_Job </td><td>9.834750e+17</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>⋯</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td></tr>\n",
+              "\t<tr><td>AcuarioJac     </td><td>9.834750e+17</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>⋯</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td></tr>\n",
+              "\t<tr><td>agenciasanluis </td><td>9.834750e+17</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>⋯</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td></tr>\n",
+              "\t<tr><td>Alexvaldesp    </td><td>9.834750e+17</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>⋯</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td></tr>\n",
+              "\t<tr><td>Allisonband    </td><td>9.834750e+17</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>⋯</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td></tr>\n",
+              "\t<tr><td>amediumplace   </td><td>9.834750e+17</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>⋯</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td></tr>\n",
+              "\t<tr><td>amediumplace   </td><td>9.834750e+17</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>⋯</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td></tr>\n",
+              "\t<tr><td>AnahuacOaxaca  </td><td>9.834750e+17</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>⋯</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td></tr>\n",
+              "\t<tr><td>AndreaOchoaM   </td><td>9.834750e+17</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>⋯</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td></tr>\n",
+              "\t<tr><td>Angel_BM       </td><td>9.834750e+17</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>⋯</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td></tr>\n",
+              "\t<tr><td>angelasaju     </td><td>9.834750e+17</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>⋯</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td></tr>\n",
+              "\t<tr><td>angelmarielle_ </td><td>9.834751e+17</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>⋯</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td></tr>\n",
+              "\t<tr><td>AntequeraDiario</td><td>9.834750e+17</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>⋯</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td></tr>\n",
+              "\t<tr><td>Arresnita      </td><td>9.834750e+17</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>⋯</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td></tr>\n",
+              "\t<tr><td>azamar1        </td><td>9.834750e+17</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>⋯</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td></tr>\n",
+              "\t<tr><td>Banking_job    </td><td>9.834750e+17</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>⋯</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td></tr>\n",
+              "\t<tr><td>baxtersa23     </td><td>9.834750e+17</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>⋯</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td></tr>\n",
+              "\t<tr><td>BecSantus      </td><td>9.834751e+17</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>⋯</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td></tr>\n",
+              "\t<tr><td>BGoldenVIP     </td><td>9.834750e+17</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>⋯</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td></tr>\n",
+              "\t<tr><td>Bietan_jarrai59</td><td>9.834750e+17</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>⋯</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td></tr>\n",
+              "\t<tr><td>BrendaBCG12    </td><td>9.834750e+17</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>⋯</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td></tr>\n",
+              "\t<tr><td>BrendaBCG12    </td><td>9.834751e+17</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>⋯</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td></tr>\n",
+              "\t<tr><td>casaverde4piso </td><td>9.834750e+17</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>⋯</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td></tr>\n",
+              "\t<tr><td>cata5581299141 </td><td>9.834751e+17</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>⋯</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td></tr>\n",
+              "\t<tr><td>CEASMx         </td><td>9.834750e+17</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>⋯</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td></tr>\n",
+              "\t<tr><td>⋮</td><td>⋮</td><td>⋮</td><td>⋮</td><td>⋮</td><td>⋮</td><td>⋮</td><td>⋮</td><td>⋮</td><td>⋮</td><td>⋱</td><td>⋮</td><td>⋮</td><td>⋮</td><td>⋮</td><td>⋮</td><td>⋮</td><td>⋮</td><td>⋮</td><td>⋮</td><td>⋮</td></tr>\n",
+              "\t<tr><td>UNAM_MX      </td><td>9.831324e+17</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>⋯</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td></tr>\n",
+              "\t<tr><td>UNAM_MX      </td><td>9.831475e+17</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>⋯</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td></tr>\n",
+              "\t<tr><td>UNAM_MX      </td><td>9.831626e+17</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>⋯</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td></tr>\n",
+              "\t<tr><td>UNAM_MX      </td><td>9.831777e+17</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>⋯</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td></tr>\n",
+              "\t<tr><td>UNAM_MX      </td><td>9.831852e+17</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>⋯</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td></tr>\n",
+              "\t<tr><td>UNAM_MX      </td><td>9.833138e+17</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>⋯</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td></tr>\n",
+              "\t<tr><td>UNAM_MX      </td><td>9.833287e+17</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>⋯</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td></tr>\n",
+              "\t<tr><td>UNAM_MX      </td><td>9.833363e+17</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>⋯</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td></tr>\n",
+              "\t<tr><td>UNAM_MX      </td><td>9.833440e+17</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>⋯</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td></tr>\n",
+              "\t<tr><td>UNAM_MX      </td><td>9.833513e+17</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>⋯</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td></tr>\n",
+              "\t<tr><td>UNAM_MX      </td><td>9.833590e+17</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>⋯</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td></tr>\n",
+              "\t<tr><td>UNAM_MX      </td><td>9.833665e+17</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>⋯</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td></tr>\n",
+              "\t<tr><td>UNAM_MX      </td><td>9.833740e+17</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>⋯</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td></tr>\n",
+              "\t<tr><td>UNAM_MX      </td><td>9.833894e+17</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>⋯</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td></tr>\n",
+              "\t<tr><td>UNAM_MX      </td><td>9.834042e+17</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>⋯</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td></tr>\n",
+              "\t<tr><td>UNAM_MX      </td><td>9.834118e+17</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>⋯</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td></tr>\n",
+              "\t<tr><td>UNAM_MX      </td><td>9.834196e+17</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>⋯</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td></tr>\n",
+              "\t<tr><td>UNAM_MX      </td><td>9.834269e+17</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>⋯</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td></tr>\n",
+              "\t<tr><td>UNAM_MX      </td><td>9.834345e+17</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>⋯</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td></tr>\n",
+              "\t<tr><td>UNAM_MX      </td><td>9.834495e+17</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>⋯</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td></tr>\n",
+              "\t<tr><td>UNAM_MX      </td><td>9.834571e+17</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>⋯</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td></tr>\n",
+              "\t<tr><td>UNAM_MX      </td><td>9.834647e+17</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>⋯</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td></tr>\n",
+              "\t<tr><td>UNAM_MX      </td><td>9.834722e+17</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>⋯</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td></tr>\n",
+              "\t<tr><td>Unkilodeayuda</td><td>9.834750e+17</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>⋯</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td></tr>\n",
+              "\t<tr><td>volutainfo   </td><td>9.834750e+17</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>⋯</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td></tr>\n",
+              "\t<tr><td>yaboycarnz   </td><td>9.834750e+17</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>⋯</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td></tr>\n",
+              "\t<tr><td>YarelCS      </td><td>9.834750e+17</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>⋯</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td></tr>\n",
+              "\t<tr><td>YazminSosaF  </td><td>9.834750e+17</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>⋯</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td></tr>\n",
+              "\t<tr><td>Yeolanatomy  </td><td>9.834750e+17</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>⋯</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td></tr>\n",
+              "\t<tr><td>zunigae903   </td><td>9.834750e+17</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>⋯</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td></tr>\n",
+              "</tbody>\n",
+              "</table>\n"
+            ]
+          },
+          "metadata": {
+            "tags": []
+          }
+        }
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "nRSTAqJXxXY0",
+        "colab_type": "text"
+      },
+      "source": [
+        "9. Al ser un proceso repetitivo lo hacemos función y aplicamos el filtro para quitar links y de paso eliminamos columnas innecesarias"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "rJ9CffV-qKZ1",
+        "colab_type": "code",
+        "colab": {}
+      },
+      "source": [
+        "crear_matriz <- function(tabla) {\n",
+        "  tabla %>%\n",
+        "    mutate(text = quitar_url(text)) %>%\n",
+        "    unnest_tokens(input = \"text\", output = \"palabra\") %>%\n",
+        "    count(screen_name, status_id, palabra) %>%\n",
+        "    spread(key = palabra, value = n) %>%\n",
+        "    select(-status_id)\n",
+        "}"
+      ],
+      "execution_count": 15,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "BzaVx5USyRsr",
+        "colab_type": "text"
+      },
+      "source": [
+        "##Naive Bayes"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "heLDq51MyUOh",
+        "colab_type": "text"
+      },
+      "source": [
+        "10. Lo que se busca es poder predecir si un tweet le pertenece a un usuario en particular, solo se usarán 2 categorías, en caso de no pertenecer, simplemente se le pone \"Otro\""
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "psc9BkN4rCeZ",
+        "colab_type": "code",
+        "colab": {}
+      },
+      "source": [
+        "ejemplo_matriz <-\n",
+        "  tweets_df %>%\n",
+        "  mutate(screen_name = ifelse(screen_name == \"MSFTMexico\", screen_name, \"Otro\"),\n",
+        "         screen_name = as.factor(screen_name)) %>%\n",
+        "  crear_matriz"
+      ],
+      "execution_count": 16,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "UETWggsH1kkV",
+        "colab_type": "text"
+      },
+      "source": [
+        "###Sets de entrenamiento y prueba"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "l6KXqUM311S5",
+        "colab_type": "text"
+      },
+      "source": [
+        "11.Se van a dividir los datos de modo que tengamos 70% de ellos en el set de entrenamiento y el resto en el set de prueba. \n",
+        ">Se usa seed para que sea reproducible y lo colocamos antes de obtener el primer set"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "tOiqME-JrIZB",
+        "colab_type": "code",
+        "colab": {}
+      },
+      "source": [
+        "set.seed(2001)\n",
+        "ejemplo_entrenamiento <- sample_frac(ejemplo_matriz, .7)\n",
+        "ejemplo_prueba <- setdiff(ejemplo_matriz, ejemplo_entrenamiento)"
+      ],
+      "execution_count": 17,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "SbSlbLop2fBe",
+        "colab_type": "text"
+      },
+      "source": [
+        "###Aplicación del modelo"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "Dcv_S5fS2_lT",
+        "colab_type": "text"
+      },
+      "source": [
+        "12. Llamamos a la función naive_bayes y le pasamos la variable objetivo para clasificar y los datos que serán usados"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "lr534r2nrVUK",
+        "colab_type": "code",
+        "colab": {}
+      },
+      "source": [
+        "ejemplo_modelo <- naive_bayes(formula = screen_name ~ .,  data = ejemplo_entrenamiento)"
+      ],
+      "execution_count": 19,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "2PkaKo8y3NIV",
+        "colab_type": "text"
+      },
+      "source": [
+        "###Haciendo predicciones"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "DszN5PdA3jdL",
+        "colab_type": "text"
+      },
+      "source": [
+        "13.Para realizar predicciones usaremos la funcion *predict* y le pasamos el modelo y datos nuevos, por lo que le pasaremos el set de prueba"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "b-vIMMzXrXR-",
+        "colab_type": "code",
+        "colab": {
+          "base_uri": "https://localhost:8080/",
+          "height": 71
+        },
+        "outputId": "a8ea6810-e120-4bf5-93cd-b27d8760729d"
+      },
+      "source": [
+        "ejemplo_prediccion <- predict(ejemplo_modelo, ejemplo_prueba)"
+      ],
+      "execution_count": 20,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "text": [
+            "Warning message:\n",
+            "“predict.naive_bayes(): more features in the newdata are provided as there are probability tables in the object. Calculation is performed based on features to be found in the tables.”\n"
+          ],
+          "name": "stderr"
+        }
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "g4kYwVsX37vy",
+        "colab_type": "text"
+      },
+      "source": [
+        "14. Para analizar el éxito del modelo, crearemos una matriz de confusión, le pasamos el vector con las predicciones y los valores reales de screen_name"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "2bLOltY4reMa",
+        "colab_type": "code",
+        "colab": {
+          "base_uri": "https://localhost:8080/",
+          "height": 476
+        },
+        "outputId": "33861363-b83b-48af-b32a-7cddc03c10d8"
+      },
+      "source": [
+        "confusionMatrix(ejemplo_prediccion, ejemplo_prueba[[\"screen_name\"]])"
+      ],
+      "execution_count": 27,
+      "outputs": [
+        {
+          "output_type": "display_data",
+          "data": {
+            "text/plain": [
+              "Confusion Matrix and Statistics\n",
+              "\n",
+              "            Reference\n",
+              "Prediction   MSFTMexico Otro\n",
+              "  MSFTMexico         48   20\n",
+              "  Otro               11  309\n",
+              "                                          \n",
+              "               Accuracy : 0.9201          \n",
+              "                 95% CI : (0.8885, 0.9451)\n",
+              "    No Information Rate : 0.8479          \n",
+              "    P-Value [Acc > NIR] : 1.404e-05       \n",
+              "                                          \n",
+              "                  Kappa : 0.7084          \n",
+              "                                          \n",
+              " Mcnemar's Test P-Value : 0.1508          \n",
+              "                                          \n",
+              "            Sensitivity : 0.8136          \n",
+              "            Specificity : 0.9392          \n",
+              "         Pos Pred Value : 0.7059          \n",
+              "         Neg Pred Value : 0.9656          \n",
+              "             Prevalence : 0.1521          \n",
+              "         Detection Rate : 0.1237          \n",
+              "   Detection Prevalence : 0.1753          \n",
+              "      Balanced Accuracy : 0.8764          \n",
+              "                                          \n",
+              "       'Positive' Class : MSFTMexico      \n",
+              "                                          "
+            ]
+          },
+          "metadata": {
+            "tags": []
+          }
+        }
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "Sea9TtET4NkV",
+        "colab_type": "text"
+      },
+      "source": [
+        ">Obtuvimos una precisión del 92.01%, por lo que no se realizó algún ajuste en el modelo. También se obtuvo 93.92% de Especificidad, que corresponde en este caso a la categoria \"Otro\""
+      ]
+    }
+  ]
+}
