@@ -487,7 +487,7 @@ El Support Vector Classifier descrito en los apartados anteriores consigue bueno
 
 El hecho de que los grupos no sean linealmente separables en el espacio original no significa que no lo sean en un espacio de mayores dimensiones. Las imágenes siguientes muestran como dos grupos, cuya separación en dos dimensiones no es lineal, sí lo es al añadir una tercera dimensión.
 
-![CSV](https://github.com/RQuilcatP10/M1-ProyectoFinal/blob/master/Otros/M1SVM.png)
+![svm](https://github.com/RQuilcatP10/M1-ProyectoFinal/blob/master/Otros/M1SVM.png)
 
 <i><b><u> IMPLEMENTACIÓN EN R PARA ANÁLISIS DE SENTIMIENTOS</b></u></i>
 
@@ -562,4 +562,59 @@ Si todo sale correctamente, solo quedaría crear un objeto predictivo, pasarle e
 predictsSVM <- predict(SVM, newdata = testSparse)
 confusionMatrix(predictsSVM, as.factor(testSparse$sentiment))
 ```
-Con ello tendremos implementado SVM para nuestro análisis de sentimientos, analizamos la matriz, segun los resultados y el Accuracy o precisión del modelo.
+Con ello tendremos implementado SVM para nuestro análisis de sentimientos, analizamos la matriz, segun los resultados y el Accuracy o precisión del modelo, el cual, si es alto y mayor a lo estimado (70% minimo) determinará si los nuevos tweets son negativos o positivos, y para el caso de estudio sería aprobatorio o desaprobatorioel nivel de aceptación de la vacuna.
+
+#### K-MEANS (CLUSTERING)
+K-means es un algoritmo de clasificación no supervisada (clusterización) que agrupa objetos en k grupos basándose en sus características. El agrupamiento se realiza minimizando la suma de distancias entre cada objeto y el centroide de su grupo o cluster. Se suele usar la distancia cuadrática.
+
+El algoritmo consta de tres pasos:
+
+1. Inicialización: una vez escogido el número de grupos, k, se establecen k centroides en el espacio de los datos, por ejemplo, escogiéndolos aleatoriamente.
+2. Asignación objetos a los centroides: cada objeto de los datos es asignado a su centroide más cercano.
+3. Actualización centroides: se actualiza la posición del centroide de cada grupo tomando como nuevo centroide la posición del promedio de los objetos pertenecientes a dicho grupo.
+Se repiten los pasos 2 y 3 hasta que los centroides no se mueven, o se mueven por debajo de una distancia umbral en cada paso.
+
+El algoritmo k-means resuelve un problema de optimización, siendo la función a optimizar (minimizar) la suma de las distancias cuadráticas de cada objeto al centroide de su cluster.
+
+![CSV](https://github.com/RQuilcatP10/M1-ProyectoFinal/blob/master/Otros/M1KMeans.png)
+
+<i><b><u> IMPLEMENTACIÓN EN R PARA ANÁLISIS DE SENTIMIENTOS</b></u></i>
+
+Importamos el paquete de text mining para crear el corpus para el modelo, en este caso, la clasificacion sera apartir del texto del tweet, el cual será clasificado en los distintos grupos.
+
+```r
+library(tm)
+tweets <- read.csv("vacuna_dataset_preprocesado.csv", sep=",")
+
+#Construccion del corpus vectorizado
+corpus <- Corpus(VectorSource(tweets$Clean.Tweet))
+
+# Creamos el documenttermmatrix, nos quedamos con las palabras mas usadas (sparce)
+tdm <- TermDocumentMatrix(corpus, 
+                          control = list(minWordLength=c(1,Inf)))
+t <- removeSparseTerms(tdm, sparse=0.98)
+m <- as.matrix(t)
+
+# Vemos las palabras mas frecuentes
+freq <- rowSums(m)
+freq <- subset(freq, freq>=50)
+barplot(freq, las=2, col = rainbow(25))
+
+# KMeans jerarquico, saca la distancia entre cada elemento o palabra en un tweet,
+# Luego se le aplica hclust (clustering jerarquico) y vemos el agrupamiento de palabras para K grupos
+distance <- dist(scale(m))
+print(distance, digits = 2)
+hc <- hclust(distance, method = "ward.D")
+plot(hc, hang=-1)
+rect.hclust(hc, k=12)
+
+#k-means simple para cada palabra en un tweet.
+m1 <- t(m)
+k <- 3
+kc <- kmeans(m1, k)
+kc
+```
+
+Como se ve en el codigo, el modelo recive el texto del tweet, pero este primero ha ido cambiando su estructura, pasando a ser un corpus, para vectorizar cada palabra, luego se transformo en un TermDocumentMatrix, el cual tiene como columnas las palabras y como filas cada tweet text.
+
+Luego de ello, creamos una matriz apartir de la matrizdocument donde se ha omitido palabras que son poco mencionadas, finalmente vemos dos tipos de clustering, uno jerarquico para ver el grado de familiaridad entre una palabra y la otra. Mientras que si aplicamos un kmeans simple, obtendremos una matriz con cada palabra asignada a uno de los grupos definidos, por cada K grupo, el Accuracy del modelo irá variando, mientras mayor el accuracy, mayor es la probabilidad de predecir si un tweet es aprobatorio (positivo) o desaprobatorio (negativo).
