@@ -126,3 +126,175 @@ En esta parte, para el proyecto hemos hecho las siguientes consideraciones:
 >   1. Se hará uso de una base de datos alojada en SQL Server, creada con un servicio en Amazon Web Services.
 >   2. Se hará uso del dataset para dividirlo y formar archivos .csv para insertarlos a través de la función BULK de SQL.
 >   3. Al no contar con un servidor de alojamiento de base de datos fisico, primero crearemos la base de datos de manera local y también en el servidor creado, esto con el fin de crear un script que crea el esquema, las tablas, y los registros, y lo ejecutaremos usando Python.
+
+Para poder crear una instancia en SQL Server, donde está alojado nuestra base de datos, debemos insalar lo siguiente para poder conectarnos al servidor
+
+```bash
+#Crear e instalar instancia de Microsoft SQL Server 2017 para Linux
+%%sh
+curl https://packages.microsoft.com/keys/microsoft.asc | apt-key add -
+curl https://packages.microsoft.com/config/ubuntu/16.04/prod.list > /etc/apt/sources.list.d/mssql-release.list
+sudo apt-get update
+sudo ACCEPT_EULA=Y apt-get -q -y install msodbcsql17
+
+# Añadir paquetes de ODBC para Linux
+!sudo apt-get install unixodbc-dev
+
+# Instala el paquete de pyodbc para conectarnos y usar la base de datos desde python
+!pip install pyodbc
+```
+Con todo esto instalado y configurado crearemos una instancia y una conexion a la base de datos. Para ello usaremos <b>PYODBC</b> para crear un objeto conexion y un objeto Cursor, los cuales nos permitiran realizar scripts SQL a través de strings.
+
+```python
+import pandas as pd
+import pyodbc
+conn = pyodbc.connect('DRIVER={ODBC Driver 17 for SQL Server};'
+                      'YOUR DATABASE SERVER'
+                      'Database=YOUR DATABASE;'
+                      'UID=YOUR ID;'
+                      'PWD=YOUR PASSWORD;'
+                      'TDS_Version=8.0;'
+                      'Port=YOIR PORT;')
+cursor = conn.cursor()
+```
+El esquema de base de datos se puede crear de dos formas, la primera es ejecuando un script schema de SQL Server, para ello PYODBC nos permite hacer lo siguiente
+
+```python
+with open('M1SQLPoblacion.sql', 'r', encoding='utf-8',errors='ignore') as inserts:
+  for statement in inserts:
+    print(statement)
+    cursor.execute(statement)
+```
+
+O la otra manera es creando las tablas manualmente, en nuestro caso procedemos a hacer lo siguiente:
+
+```python
+script_Sql = "STRING CREATE TABLE HERE"
+cursor.execute(script_Sql)
+conn.commit()
+```
+
+En el string, cambiaremos "STRING CREATE TABLE HERE" por el siguiente esquema SQL
+
+```SQL
+CREATE TABLE Usuarios(
+	ScreenName varchar(100) NOT NULL PRIMARY KEY,
+	FullName varchar(100)
+)
+
+CREATE TABLE Usuarios_Detalle(
+	ScreenName VARCHAR(100) FOREIGN KEY REFERENCES Usuarios(ScreenName), 
+	Followers INT, 
+	Follows INT, 
+	UserSince DATE, 
+	Location VARCHAR(200), 
+	Bio VARCHAR(MAX)
+)
+
+CREATE TABLE Tweets (
+	Date_Tweet DATE, 
+	TweetText VARCHAR(MAX), 
+	TweetID BIGINT NOT NULL PRIMARY KEY, 
+	ScreenName varchar(100) FOREIGN KEY REFERENCES Usuarios(ScreenName)
+)
+
+CREATE TABLE Tweets_Detalle(
+	TweetID BIGINT FOREIGN KEY REFERENCES Tweets(TweetID),
+	Retweets INT, 
+	Favorites INT, 
+	App VARCHAR(100)
+)
+```
+Una vez creado nuestro esquema, podemos ingresar a nuestro servidor para realizar la inserción con un archivo .csv para ello, nuestro dataset principal obtenida de GoogleSheets, la exportaremos, y dividremos en distintos dataframes para crear archivos .csv y con eso ejecutar un script SQL para insertar datos
+
+```python
+data = pd.read_csv('covid_russia_vaccine_twits.csv')
+
+# Creamos los dataframes
+usuarios = pd.DataFrame(data[['Screen Name', 'Full Name']])
+usuarios_detalle = pd.DataFrame(data[['Screen Name', 'Followers', 'Follows', 'User Since', 'Location.1', 'Bio']])
+tweets = pd.DataFrame(data[['Date', 'Tweet Text', 'Tweet ID', 'Screen Name']])
+tweets_detalle = pd.DataFrame(data[['Tweet ID', 'Retweets', 'Favorites', 'App']])
+
+#Creamos el .csv con el siguiente formato
+dataframename.to_csv('archivo_name.csv', index=False, sep=";")
+```
+
+Y una vez terminado esto, ingresamos al servidor y ejecutamos el siguiente script SQL
+
+```sql
+create table UsuariosCsv(
+	ScreenName varchar(100),
+	FullName varchar(100)
+)
+BULK INSERT UsuariosCsv
+FROM 'pathFile'
+WITH
+(
+    FIRSTROW = 2,
+    FIELDTERMINATOR = ';',  --CSV field delimiter
+    ROWTERMINATOR = '\n',   --Use to shift the control to next row
+    TABLOCK
+)
+Insert into Usuarios(ScreenName,FullName) SELECT ScreenName,FullName from UsuariosCsv
+drop table UsuariosCsv
+--select * from Usuarios
+/*******************************************************/
+create table Usuarios_DetalleCsv(
+	ScreenName VARCHAR(100), 
+	Followers INT, 
+	Follows INT, 
+	UserSince DATE, 
+	Location VARCHAR(200), 
+	Bio VARCHAR(MAX)
+)
+BULK INSERT Usuarios_DetalleCsv
+FROM 'pathFile'
+WITH
+(
+    FIRSTROW = 2,
+    FIELDTERMINATOR = ';',  --CSV field delimiter
+    ROWTERMINATOR = '\n',   --Use to shift the control to next row
+    TABLOCK
+)
+Insert into Usuarios_Detalle(ScreenName, Followers,Follows,UserSince,Location,Bio) SELECT ScreenName, Followers,Follows,UserSince,Location,Bio from Usuarios_DetalleCsv
+drop table Usuarios_DetalleCsv
+/*******************************************************/
+create table TweetsCsv(
+	Date_Tweet DATETIME, 
+	TweetText VARCHAR(MAX), 
+	TweetID BIGINT, 
+	ScreenName varchar(100)
+)
+BULK INSERT TweetsCsv
+FROM 'pathFile'
+WITH
+(
+    FIRSTROW = 2,
+    FIELDTERMINATOR = ';',  --CSV field delimiter
+    ROWTERMINATOR = '\n',   --Use to shift the control to next row
+    TABLOCK
+)
+Insert into Tweets(Date_Tweet,TweetText,TweetID,ScreenName) SELECT Date_Tweet,TweetText,TweetID,ScreenName from TweetsCsv
+drop table TweetsCsv
+--select * from TweetsCsv
+/************************************************************/
+create table Tweets_DetalleCsv(
+	TweetID BIGINT,
+	Retweets INT, 
+	Favorites INT, 
+	App VARCHAR(100)
+)
+BULK INSERT Tweets_DetalleCsv
+FROM 'pathFile'
+WITH
+(
+    FIRSTROW = 2,
+    FIELDTERMINATOR = ';',  --CSV field delimiter
+    ROWTERMINATOR = '\n',   --Use to shift the control to next row
+    TABLOCK
+)
+Insert into Tweets_Detalle(TweetID,Retweets,Favorites,App) SELECT TweetID,Retweets,Favorites,App from Tweets_DetalleCsv
+drop table Tweets_DetalleCsv
+```
+Con eso terminamos la creación y poblamiento de nuestra base de datos basado en el dataset generado.
